@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom'; // ✅ ADD THIS IMPORT
 import { useAuth } from '../../context/AuthContext';
-import './login.css';
+import './Login.css';
 import logo from '../../assets/logo.png';
 const API_BASE_URL = import.meta.env.VITE_API_URL;
 const Login = () => { // ✅ REMOVE setCurrentPage prop
