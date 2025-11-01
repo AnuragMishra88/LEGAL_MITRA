@@ -410,7 +410,7 @@ const DashboardOverview = ({ statsData, recentUsers }) => {
                 includeInactive: exportSettings.includeInactive
             });
 
-            const response = await fetch(`http://localhost:5000/api/admin/export/users?${params}`, {
+            const response = await fetch(`${API_BASE_URL}/api/admin/export/users?${params}`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
@@ -1987,7 +1987,7 @@ const UserManagement = ({ users, onUpdateUserStatus }) => {
         console.log('🗑️ Deleting user with ID:', userId);
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`http://localhost:5000/api/admin/users/${userId}`, {
+            const response = await fetch(`${API_BASE_URL}/api/admin/users/${userId}`, {
                 method: 'DELETE',
                 headers: {
                     'Authorization': `Bearer ${token}`,
