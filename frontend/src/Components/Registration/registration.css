@@ -1,0 +1,706 @@
+/* Registration.css - Professional Dark Theme */
+
+.registration-container {
+  min-height: 100vh;
+  background: 
+    radial-gradient(ellipse at 20% 20%, rgba(37, 99, 235, 0.15) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 80%, rgba(251, 191, 36, 0.1) 0%, transparent 50%),
+    linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.registration-container::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="rgba(37, 99, 235, 0.03)"><circle cx="20" cy="20" r="1.5"/><circle cx="80" cy="80" r="2"/><circle cx="60" cy="30" r="1"/></svg>');
+  animation: floatBackground 40s infinite linear;
+  pointer-events: none;
+  z-index: -1;
+}
+
+@keyframes floatBackground {
+  0% { transform: translate(0px, 0px) rotate(0deg); }
+  100% { transform: translate(-40px, -40px) rotate(180deg); }
+}
+
+.registration-card {
+  background: linear-gradient(135deg, #1e293b, #334155);
+  border-radius: 24px;
+  display: flex;
+  width: 100%;
+  max-width: 1000px;
+  min-height: 600px;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(100, 116, 139, 0.3);
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+}
+
+/* Hero Section */
+.registration-hero {
+  flex: 1;
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.1), rgba(251, 191, 36, 0.05));
+  padding: 3rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.registration-hero::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(96, 165, 250, 0.1) 0%, transparent 50%);
+  animation: rotate 15s linear infinite;
+}
+
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.hero-content {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  color: #f8fafc;
+}
+
+.hero-content h1 {
+  font-size: 2.5rem;
+  font-weight: 800;
+  margin-bottom: 1rem;
+  background: linear-gradient(135deg, #60a5fa 0%, #fbbf24 50%, #60a5fa 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  background-size: 200% 200%;
+  animation: gradientShift 4s ease-in-out infinite;
+}
+
+@keyframes gradientShift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+.hero-content p {
+  color: #cbd5e1;
+  font-size: 1.1rem;
+  line-height: 1.6;
+  margin-bottom: 2rem;
+}
+
+.features {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.feature {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: rgba(15, 23, 42, 0.4);
+  border-radius: 12px;
+  border: 1px solid rgba(100, 116, 139, 0.2);
+  transition: all 0.3s ease;
+  color: #cbd5e1;
+  font-weight: 500;
+}
+
+.feature:hover {
+  background: rgba(96, 165, 250, 0.1);
+  border-color: rgba(96, 165, 250, 0.3);
+  transform: translateX(5px);
+  color: #f8fafc;
+}
+
+.feature-icon {
+  font-size: 1.5rem;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(96, 165, 250, 0.1);
+  border-radius: 10px;
+}
+
+/* Registration Form Section */
+.registration-form {
+  flex: 1;
+  padding: 3rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.back-btn {
+  align-self: flex-start;
+  background: transparent;
+  border: 2px solid rgba(100, 116, 139, 0.3);
+  color: #cbd5e1;
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-bottom: 2rem;
+}
+
+.back-btn:hover {
+  background: rgba(100, 116, 139, 0.1);
+  border-color: rgba(96, 165, 250, 0.5);
+  color: #60a5fa;
+}
+
+.form-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.form-header h2 {
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: #f8fafc;
+  margin-bottom: 0.5rem;
+}
+
+.form-header p {
+  color: #94a3b8;
+  font-size: 1rem;
+}
+
+/* Message Styles */
+.message {
+  padding: 1rem;
+  border-radius: 10px;
+  margin-bottom: 1.5rem;
+  text-align: center;
+  font-weight: 500;
+}
+
+.message.success {
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  color: #10b981;
+}
+
+.message.error {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #ef4444;
+}
+
+/* Form Styles */
+form {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-group label {
+  display: block;
+  color: #cbd5e1;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.form-group input {
+  width: 100%;
+  background: rgba(15, 23, 42, 0.8);
+  border: 2px solid rgba(100, 116, 139, 0.3);
+  border-radius: 10px;
+  padding: 1rem;
+  color: #f8fafc;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: #60a5fa;
+  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.1);
+  background: rgba(15, 23, 42, 0.9);
+}
+
+.form-group input::placeholder {
+  color: #64748b;
+}
+
+/* Fixed Select Dropdown Styles */
+.form-group select {
+  width: 100%;
+  background: rgba(15, 23, 42, 0.8);
+  border: 2px solid rgba(100, 116, 139, 0.3);
+  border-radius: 10px;
+  padding: 1rem;
+  color: #f8fafc;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  cursor: pointer;
+  
+  /* Remove default arrow and add custom one */
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2364748b' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right 1rem center;
+  background-repeat: no-repeat;
+  background-size: 1.2em;
+  padding-right: 2.5rem;
+}
+
+.form-group select:focus {
+  outline: none;
+  border-color: #60a5fa;
+  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.1);
+  background: rgba(15, 23, 42, 0.9);
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2360a5fa' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right 1rem center;
+  background-repeat: no-repeat;
+  background-size: 1.2em;
+}
+
+.form-group select:hover {
+  border-color: rgba(96, 165, 250, 0.5);
+}
+
+.error-text {
+  color: #ef4444;
+  font-size: 0.8rem;
+  margin-top: 0.5rem;
+  display: block;
+}
+
+/* Submit Button */
+.submit-btn {
+  width: 100%;
+  background: linear-gradient(135deg, #60a5fa, #3b82f6);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 1rem 2rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: auto;
+  margin-bottom: 1.5rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.submit-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(96, 165, 250, 0.4);
+}
+
+.submit-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.submit-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.submit-btn:hover::before {
+  left: 100%;
+}
+
+/* Login Link */
+.login-link {
+  text-align: center;
+  color: #94a3b8;
+  font-size: 0.9rem;
+  margin-top: 1rem;
+}
+
+.link-btn {
+  background: none;
+  border: none;
+  color: #60a5fa;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+  transition: color 0.3s ease;
+}
+
+.link-btn:hover {
+  color: #3b82f6;
+}
+
+/* Role-specific styling for select options */
+.form-group select option {
+  background: #1e293b;
+  color: #f8fafc;
+  padding: 1rem;
+}
+
+.form-group select option:hover {
+  background: #60a5fa;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .registration-container {
+    padding: 1rem;
+  }
+  
+  .registration-card {
+    flex-direction: column;
+    min-height: auto;
+  }
+  
+  .registration-hero {
+    padding: 2rem;
+  }
+  
+  .registration-form {
+    padding: 2rem;
+  }
+  
+  .hero-content h1 {
+    font-size: 2rem;
+  }
+  
+  .form-header h2 {
+    font-size: 1.8rem;
+  }
+  
+  .features {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  
+  .feature {
+    flex: 1;
+    min-width: 150px;
+    justify-content: center;
+    text-align: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .registration-container {
+    padding: 0.5rem;
+  }
+  
+  .registration-hero,
+  .registration-form {
+    padding: 1.5rem;
+  }
+  
+  .hero-content h1 {
+    font-size: 1.8rem;
+  }
+  
+  .form-header h2 {
+    font-size: 1.6rem;
+  }
+  
+  .features {
+    flex-direction: column;
+  }
+  
+  .feature {
+    min-width: auto;
+  }
+  
+  .feature-icon {
+    font-size: 1.2rem;
+    width: 35px;
+    height: 35px;
+  }
+}
+
+/* Animation for form elements */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.form-group {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+.submit-btn {
+  animation: fadeInUp 0.8s ease-out;
+}
+
+/* Special focus for role selection */
+.form-group:last-of-type {
+  animation-delay: 0.3s;
+}
+
+/* Lawyer-specific fields - Dark Theme */
+.lawyer-fields {
+  margin: 1.5rem 0;
+  padding: 1.5rem;
+  background: rgba(15, 23, 42, 0.4);
+  border-radius: 12px;
+  border: 1px solid rgba(96, 165, 250, 0.2);
+  backdrop-filter: blur(10px);
+  animation: fadeInUp 0.6s ease-out;
+}
+
+.form-section-divider {
+  text-align: center;
+  margin: 1rem 0 1.5rem 0;
+  position: relative;
+}
+
+.form-section-divider::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: rgba(96, 165, 250, 0.3);
+}
+
+.form-section-divider span {
+  background: #1e293b;
+  padding: 0 1rem;
+  color: #60a5fa;
+  font-weight: 600;
+  font-size: 0.9rem;
+  position: relative;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+/* Verification notice - Dark Theme */
+.verification-notice {
+  display: flex;
+  gap: 1rem;
+  padding: 1rem;
+  background: rgba(251, 191, 36, 0.1);
+  border: 1px solid rgba(251, 191, 36, 0.3);
+  border-radius: 8px;
+  margin-top: 1rem;
+  backdrop-filter: blur(10px);
+}
+
+.notice-icon {
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+.notice-content strong {
+  color: #fbbf24;
+  display: block;
+  margin-bottom: 0.3rem;
+}
+
+.notice-content p {
+  color: #fef3c7;
+  font-size: 0.85rem;
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* Textarea styling - Dark Theme */
+.form-group textarea {
+  width: 100%;
+  background: rgba(15, 23, 42, 0.8);
+  border: 2px solid rgba(100, 116, 139, 0.3);
+  border-radius: 10px;
+  padding: 1rem;
+  color: #f8fafc;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  resize: vertical;
+  min-height: 80px;
+  font-family: inherit;
+}
+
+.form-group textarea:focus {
+  outline: none;
+  border-color: #60a5fa;
+  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.1);
+  background: rgba(15, 23, 42, 0.9);
+}
+
+.form-group textarea::placeholder {
+  color: #64748b;
+}
+
+/* Number input styling */
+.form-group input[type="number"] {
+  width: 100%;
+  background: rgba(15, 23, 42, 0.8);
+  border: 2px solid rgba(100, 116, 139, 0.3);
+  border-radius: 10px;
+  padding: 1rem;
+  color: #f8fafc;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.form-group input[type="number"]:focus {
+  outline: none;
+  border-color: #60a5fa;
+  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.1);
+  background: rgba(15, 23, 42, 0.9);
+}
+
+.form-group input[type="number"]::placeholder {
+  color: #64748b;
+}
+
+/* Tel input styling */
+.form-group input[type="tel"] {
+  width: 100%;
+  background: rgba(15, 23, 42, 0.8);
+  border: 2px solid rgba(100, 116, 139, 0.3);
+  border-radius: 10px;
+  padding: 1rem;
+  color: #f8fafc;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.form-group input[type="tel"]:focus {
+  outline: none;
+  border-color: #60a5fa;
+  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.1);
+  background: rgba(15, 23, 42, 0.9);
+}
+
+.form-group input[type="tel"]::placeholder {
+  color: #64748b;
+}
+
+/* Responsive design for form rows */
+@media (max-width: 768px) {
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+  
+  .lawyer-fields {
+    padding: 1rem;
+    margin: 1rem 0;
+  }
+  
+  .verification-notice {
+    flex-direction: column;
+    text-align: center;
+    gap: 0.5rem;
+  }
+}
+
+/* Animation delays for lawyer fields */
+.lawyer-fields .form-group:nth-child(1) { animation-delay: 0.1s; }
+.lawyer-fields .form-group:nth-child(2) { animation-delay: 0.2s; }
+.lawyer-fields .form-group:nth-child(3) { animation-delay: 0.3s; }
+.lawyer-fields .form-group:nth-child(4) { animation-delay: 0.4s; }
+.lawyer-fields .verification-notice { animation-delay: 0.5s; }
+
+/* Smooth transition for lawyer fields appearance */
+.lawyer-fields {
+  transition: all 0.3s ease;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Ensure consistent select styling for lawyer specialization */
+.lawyer-fields .form-group select {
+  width: 100%;
+  background: rgba(15, 23, 42, 0.8);
+  border: 2px solid rgba(100, 116, 139, 0.3);
+  border-radius: 10px;
+  padding: 1rem;
+  color: #f8fafc;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  cursor: pointer;
+  
+  /* Remove default arrow and add custom one */
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2364748b' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right 1rem center;
+  background-repeat: no-repeat;
+  background-size: 1.2em;
+  padding-right: 2.5rem;
+}
+
+.lawyer-fields .form-group select:focus {
+  outline: none;
+  border-color: #60a5fa;
+  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.1);
+  background: rgba(15, 23, 42, 0.9);
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2360a5fa' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+}
+
+.lawyer-fields .form-group select:hover {
+  border-color: rgba(96, 165, 250, 0.5);
+}
+
+/* Option styling for dark theme */
+.lawyer-fields .form-group select option {
+  background: #1e293b;
+  color: #f8fafc;
+  padding: 1rem;
+  border: none;
+}
+
+.lawyer-fields .form-group select option:checked {
+  background: rgba(96, 165, 250, 0.2);
+  color: #60a5fa;
+}
+
+.lawyer-fields .form-group select option:hover {
+  background: rgba(96, 165, 250, 0.3);
+}
