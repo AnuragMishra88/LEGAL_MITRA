@@ -136,7 +136,7 @@ const Login = () => { // ✅ REMOVE setCurrentPage prop
     
     try {
       // This endpoint should return the OAuth URL from your backend
-      const response = await fetch(`http://localhost:5000/api/auth/${provider}`, {
+      const response = await fetch(`${API_BASE_URL}/api/auth/${provider}`, {
         method: 'GET',
       });
 
