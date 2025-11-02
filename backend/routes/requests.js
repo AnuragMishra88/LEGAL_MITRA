@@ -276,33 +276,60 @@ router.get('/lawyer/check-new-requests', protect, async (req, res) => { // ✅ C
   }
 });
 
-// Accept/Decline request - use protect
-router.put('/:requestId/respond', protect, async (req, res) => { // ✅ Change auth to protect
+// // Accept/Decline request - use protect
+// router.put('/:requestId/respond', protect, async (req, res) => { // ✅ Change auth to protect
+//   try {
+//     const { status, response } = req.body;
+//     const request = await Request.findById(req.params.requestId);
+
+//     if (!request) {
+//       return res.status(404).json({ error: 'Request not found' });
+//     }
+
+//     if (request.lawyerId.toString() !== req.user.id) {
+//       return res.status(403).json({ error: 'Access denied' });
+//     }
+
+//     request.status = status;
+//     request.lawyerResponse = response;
+//     request.responseDate = new Date();
+
+//     await request.save();
+    
+//     // Populate before sending response
+//     const updatedRequest = await Request.findById(request._id)
+//       .populate('clientId', 'name email phone');
+      
+//     res.json({ success: true, request: updatedRequest });
+//   } catch (error) {
+//     console.error('Error responding to request:', error);
+//     res.status(500).json({ error: error.message });
+//   }
+// });
+
+
+router.put('/:requestId/respond', protect, async (req, res) => {
   try {
-    const { status, response } = req.body;
+    console.log('🔐 User from token:', req.user.id);
+    console.log('🔐 User role:', req.user.role);
+    
     const request = await Request.findById(req.params.requestId);
+    console.log('📦 Request found:', request);
+    console.log('🔐 Request lawyerId:', request.lawyerId);
+    console.log('🔐 Comparison:', request.lawyerId.toString(), '===', req.user.id);
 
     if (!request) {
       return res.status(404).json({ error: 'Request not found' });
     }
 
     if (request.lawyerId.toString() !== req.user.id) {
+      console.log('❌ Access denied - Lawyer ID mismatch');
       return res.status(403).json({ error: 'Access denied' });
     }
 
-    request.status = status;
-    request.lawyerResponse = response;
-    request.responseDate = new Date();
-
-    await request.save();
-    
-    // Populate before sending response
-    const updatedRequest = await Request.findById(request._id)
-      .populate('clientId', 'name email phone');
-      
-    res.json({ success: true, request: updatedRequest });
+    // Rest of your code...
   } catch (error) {
-    console.error('Error responding to request:', error);
+    console.error('Error:', error);
     res.status(500).json({ error: error.message });
   }
 });
