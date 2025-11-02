@@ -262,14 +262,13 @@
 // };
 
 // utils/emailService.js
-import { Resend } from 'resend';
-
-const resend = new Resend(process.env.RESEND_API_KEY);
+const sgMail = require('@sendgrid/mail');
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 // Email templates
 const emailTemplates = {
   verificationApproved: (data) => ({
-    from: 'LegalMitra <onboarding@resend.dev>',
+    from: 'legalmitra.services@gmail.com',
     to: data.email,
     subject: '🎉 LegalMitra - Verification Approved! Join Our Team',
     html: `
@@ -335,7 +334,7 @@ const emailTemplates = {
   }),
 
   verificationRejected: (data) => ({
-    from: 'LegalMitra <onboarding@resend.dev>',
+    from: 'legalmitra.services@gmail.com',
     to: data.email,
     subject: 'LegalMitra - Verification Status Update',
     html: `
@@ -391,7 +390,7 @@ const emailTemplates = {
   }),
 
   customBulkEmail: (data) => ({
-    from: 'LegalMitra <onboarding@resend.dev>',
+    from: 'legalmitra.services@gmail.com',
     to: data.email,
     subject: data.subject,
     html: `
@@ -445,12 +444,12 @@ const sendEmail = async (to, templateName, data) => {
       data: { ...data, message: data.message ? `${data.message.substring(0, 50)}...` : 'No message' }
     });
 
-    // Check Resend API key
-    if (!process.env.RESEND_API_KEY) {
-      console.error('❌ Resend API key not configured');
+    // Check SendGrid API key
+    if (!process.env.SENDGRID_API_KEY) {
+      console.error('❌ SendGrid API key not configured');
       return { 
         success: false, 
-        error: 'Resend API key not configured. Please check RESEND_API_KEY environment variable.' 
+        error: 'SendGrid API key not configured. Please check SENDGRID_API_KEY environment variable.' 
       };
     }
 
@@ -473,42 +472,32 @@ const sendEmail = async (to, templateName, data) => {
     const mailOptions = template(data);
     mailOptions.to = to; // Ensure recipient is set
 
-    console.log('📤 Sending email with Resend:', {
+    console.log('📤 Sending email with SendGrid:', {
       from: mailOptions.from,
       to: mailOptions.to,
       subject: mailOptions.subject,
       template: templateName
     });
 
-    // Send email using Resend
-    const { data: result, error } = await resend.emails.send(mailOptions);
+    // Send email using SendGrid
+    await sgMail.send(mailOptions);
     
-    if (error) {
-      console.error('❌ Resend error:', error);
-      return { 
-        success: false, 
-        error: `Email sending failed: ${error.message}` 
-      };
-    }
-
-    console.log(`✅ Email sent successfully to ${to}, Resend ID:`, result.id);
+    console.log(`✅ Email sent successfully to ${to}`);
     return { 
-      success: true, 
-      messageId: result.id,
-      response: 'Email sent via Resend' 
+      success: true,
+      message: 'Email sent via SendGrid'
     };
 
   } catch (error) {
-    console.error('❌ Error sending email:', error);
+    console.error('❌ SendGrid error:', error);
     return { 
       success: false, 
-      error: error.message,
-      stack: error.stack 
+      error: error.message
     };
   }
 };
 
-export {
+module.exports = {
   sendEmail,
   emailTemplates
 };
