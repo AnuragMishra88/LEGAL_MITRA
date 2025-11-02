@@ -376,7 +376,7 @@ const DashboardOverview = ({ statsData, recentUsers }) => {
     const handleSendBulkEmail = async (emailData) => {
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`${API_BASE_URL}/api/api/admin/send-bulk-email`, {
+            const response = await fetch(`${API_BASE_URL}/api/admin/send-bulk-email`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -655,7 +655,7 @@ const GenerateReportsModal = ({ onClose }) => {
 
             console.log('Generating report:', { reportType, format });
 
-            const response = await fetch(`${API_BASE_URL}/api/api/admin/reports/generate`, {
+            const response = await fetch(`${API_BASE_URL}/api/admin/reports/generate`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -894,7 +894,7 @@ const BulkEmailModal = ({ onClose, onSendBulkEmail }) => {
             const token = localStorage.getItem('token');
             console.log('🔍 Fetching user statistics...');
             
-            const response = await fetch(`${API_BASE_URL}/api/api/admin/user-stats`, {
+            const response = await fetch(`${API_BASE_URL}/api/admin/user-stats`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
@@ -1218,7 +1218,7 @@ const ExportModal = ({ onClose, onExportData }) => {
     const fetchExportStatistics = async () => {
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`${API_BASE_URL}/api/api/admin/export/statistics`, {
+            const response = await fetch(`${API_BASE_URL}/api/admin/export/statistics`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
@@ -2014,7 +2014,7 @@ const UserManagement = ({ users, onUpdateUserStatus }) => {
     const handleSendEmail = async (to, subject, message) => {
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`${API_BASE_URL}/api/api/admin/send-email`, {
+            const response = await fetch(`${API_BASE_URL}/api/admin/send-email`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
