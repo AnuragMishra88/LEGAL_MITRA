@@ -261,32 +261,16 @@ const Login = () => { // ✅ REMOVE setCurrentPage prop
               </button>
             </form>
 
-            <div className="divider">
-              <span>Or continue with</span>
-            </div>
-
-            <div className="social-login">
-              <button 
-                className="social-btn google-btn"
-                onClick={() => handleSocialLogin('google')}
-                disabled={isLoading}
-              >
-                <span>Google</span>
-              </button>
-              <button 
-                className="social-btn linkedin-btn"
-                onClick={() => handleSocialLogin('linkedin')}
-                disabled={isLoading}
-              >
-                <span>LinkedIn</span>
-              </button>
-            </div>
-
-            <div className="signup-link">
+           
+            <div className="social-login signup-link">
               Don't have an account?{' '}
               <button onClick={handleGoToRegister} className="link-btn">
                 Sign up here
               </button>
+            </div>
+
+            <div className="signup-link">
+              
             </div>
           </div>
         </div>
