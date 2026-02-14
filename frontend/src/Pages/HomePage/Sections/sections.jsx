@@ -7,7 +7,6 @@ export default function IPCInfo() {
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [aiQuery, setAiQuery] = useState("");
   const [languageMode, setLanguageMode] = useState('english');
-  const [activeLaw, setActiveLaw] = useState('ipc');
   const [suggestedQuestions, setSuggestedQuestions] = useState([]);
 
   // Groq API Configuration
@@ -40,7 +39,7 @@ export default function IPCInfo() {
   };
 
   const getSystemPrompt = () => {
-    const lawName = activeLaw === 'ipc' ? 'Indian Penal Code (IPC)' : 'Bharatiya Nyaya Sanhita (BNS)';
+    const lawName = 'Indian Penal Code (IPC) and Bharatiya Nyaya Sanhita (BNS)';
     
     if (languageMode === 'english') {
       return `You are LegalMitra AI, an expert in Indian law specializing in ${lawName}.
@@ -51,8 +50,9 @@ RULES:
 3. Always mention relevant section/article numbers
 4. Give practical examples
 5. Be concise but thorough
-6. Note that BNS is the new criminal code replacing IPC (2024)
+6. Note that BNS is the new criminal code replacing IPC (effective 2024)
 7. For serious matters, advise consulting a lawyer
+8. When relevant, compare IPC and BNS provisions
 
 RESPONSE FORMAT:
 - Start with brief summary
@@ -68,6 +68,7 @@ RULES:
 4. Short but complete jawab dein
 5. BNS naya criminal code hai jo IPC ki jagah 2024 mein aaya hai
 6. Gambhir mamlon mein lawyer se contact karne ki salah dein
+7. IPC aur BNS ke beech comparison bhi batayein
 
 RESPONSE FORMAT:
 - Chota summary dijiye
@@ -84,15 +85,15 @@ RESPONSE FORMAT:
     setAiResponse(null);
 
     try {
-      const lawName = activeLaw === 'ipc' ? 'Indian Penal Code (IPC)' : 'Bharatiya Nyaya Sanhita (BNS)';
+      const lawName = 'Indian Penal Code (IPC) and Bharatiya Nyaya Sanhita (BNS)';
       
       const prompt = languageMode === 'english'
-        ? `Answer this legal question about ${lawName}: "${aiQuery}"
-           Provide accurate information with relevant ${activeLaw === 'ipc' ? 'section' : 'article'} numbers.
-           ${activeLaw === 'bns' ? 'Mention corresponding IPC sections for reference.' : ''}`
-        : `${lawName} ke baare mein yeh sawal hai: "${aiQuery}"
-           Sahi jankari dein aur relevant ${activeLaw === 'ipc' ? 'section' : 'article'} numbers batayein.
-           ${activeLaw === 'bns' ? 'IPC sections se compare bhi karein.' : ''}`;
+        ? `Answer this legal question about Indian law: "${aiQuery}"
+           Provide accurate information with relevant section/article numbers from both IPC and BNS where applicable.
+           Note that BNS is the new criminal code replacing IPC (effective 2024).`
+        : `Bharatiya kanoon ke baare mein yeh sawal hai: "${aiQuery}"
+           Sahi jankari dein aur relevant IPC aur BNS section/article numbers batayein.
+           BNS naya criminal code hai jo IPC ki jagah 2024 mein aaya hai.`;
 
       const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
         method: 'POST',
@@ -149,7 +150,7 @@ RESPONSE FORMAT:
 
   const generateSuggestedQuestions = async (query, response) => {
     try {
-      const prompt = `Based on this legal Q&A about ${activeLaw === 'ipc' ? 'IPC' : 'BNS'}:
+      const prompt = `Based on this legal Q&A about Indian law:
       
 Question: "${query}"
 Answer: "${response.substring(0, 200)}..."
@@ -213,7 +214,7 @@ Suggest 3 follow-up questions someone might ask. Return only as a simple comma-s
           listType = 'bullet';
         }
         listItems.push(
-          <li key={`item-${index}`} className="response-bullet-item">
+          <li key={`item-${index}`} className="response-bullet">
             {trimmedLine.substring(1).trim()}
           </li>
         );
@@ -239,7 +240,7 @@ Suggest 3 follow-up questions someone might ask. Return only as a simple comma-s
           listType = 'numbered';
         }
         listItems.push(
-          <li key={`item-${index}`} className="response-numbered-item">
+          <li key={`item-${index}`} className="response-numbered">
             {trimmedLine.replace(/^\d+\.\s*/, '')}
           </li>
         );
@@ -325,27 +326,12 @@ Suggest 3 follow-up questions someone might ask. Return only as a simple comma-s
       {/* Header */}
       <div className="ai-header-mini">
         <div className="ai-header-left">
+          <h2>LegalMitra AI</h2>
           <div>
-            <p className="ai-subtitle">Ask anything about {activeLaw === 'ipc' ? 'IPC' : 'BNS'}</p>
+            <p className="ai-subtitle">Your AI Legal Assistant for Indian Law</p>
           </div>
         </div>
         <div className="ai-header-controls">
-          {/* Law Toggle */}
-          <div className="law-toggle-mini">
-            <button 
-              className={`law-option ${activeLaw === 'ipc' ? 'active' : ''}`}
-              onClick={() => setActiveLaw('ipc')}
-            >
-              IPC
-            </button>
-            <button 
-              className={`law-option ${activeLaw === 'bns' ? 'active' : ''}`}
-              onClick={() => setActiveLaw('bns')}
-            >
-              BNS
-            </button>
-          </div>
-
           {/* Language Toggle */}
           <div className="lang-toggle-mini">
             <button 
@@ -362,12 +348,12 @@ Suggest 3 follow-up questions someone might ask. Return only as a simple comma-s
             </button>
           </div>
 
-          {/* Clear Button */}
+          {/* Clear Button
           {aiResponse && (
             <button className="clear-chat-btn" onClick={clearChat} title="Clear chat">
               ✕
             </button>
-          )}
+          )} */}
         </div>
       </div>
 
@@ -377,9 +363,9 @@ Suggest 3 follow-up questions someone might ask. Return only as a simple comma-s
         <div className="quick-actions">
           <button 
             className="action-chip"
-            onClick={() => setAiQuery(activeLaw === 'ipc' ? "What is Section 302?" : "What is Article 101?")}
+            onClick={() => setAiQuery("What is Section 302 IPC and its BNS equivalent?")}
           >
-            📜 {activeLaw === 'ipc' ? 'Section 302' : 'Article 101'}
+            📜 Section 302
           </button>
           <button 
             className="action-chip"
@@ -405,14 +391,7 @@ Suggest 3 follow-up questions someone might ask. Return only as a simple comma-s
           >
             🔍 Theft vs Robbery
           </button>
-          {activeLaw === 'bns' && (
-            <button 
-              className="action-chip highlight"
-              onClick={() => setAiQuery("Compare BNS with IPC")}
-            >
-              🔄 IPC vs BNS
-            </button>
-          )}
+         
         </div>
 
         {/* Query Input Form */}
@@ -422,8 +401,8 @@ Suggest 3 follow-up questions someone might ask. Return only as a simple comma-s
               value={aiQuery}
               onChange={(e) => setAiQuery(e.target.value)}
               placeholder={languageMode === 'english' 
-                ? "Ask any legal question... (e.g., What is Section 302? How to get bail?)" 
-                : "कोई भी कानूनी सवाल पूछें... (जैसे, Section 302 क्या है? बेल कैसे मिलती है?)"}
+                ? "Ask any legal question... (e.g., What is Section 302? Compare IPC and BNS)" 
+                : "कोई भी कानूनी सवाल पूछें... (जैसे, Section 302 क्या है? IPC और BNS में अंतर)"}
               className="ai-query-input-main"
               rows="2"
             />
@@ -492,13 +471,13 @@ Suggest 3 follow-up questions someone might ask. Return only as a simple comma-s
                 className="response-action-btn"
                 onClick={() => navigator.clipboard.writeText(aiResponse.content)}
               >
-                📋 Copy
+                 Copy
               </button>
               <button 
                 className="response-action-btn"
                 onClick={clearChat}
               >
-                🆕 New Query
+                 New Query
               </button>
             </div>
           </div>
@@ -508,28 +487,8 @@ Suggest 3 follow-up questions someone might ask. Return only as a simple comma-s
         {!aiResponse && !isAiLoading && (
           <div className="empty-state">
             <h3>LegalMitra AI Assistant</h3>
-            <p>Ask me anything about Indian Penal Code or Bharatiya Nyaya Sanhita</p>
-            <div className="example-questions-grid">
-              <div className="example-category">
-                <span className="category-title">📜 IPC Sections</span>
-                <div className="category-chips">
-                  <button onClick={() => setAiQuery("What is Section 302?")}>Section 302</button>
-                  <button onClick={() => setAiQuery("Explain Section 420")}>Section 420</button>
-                  <button onClick={() => setAiQuery("Section 376 details")}>Section 376</button>
-                </div>
-              </div>
-             
-              {activeLaw === 'bns' && (
-                <div className="example-category">
-                  <span className="category-title">🆕 BNS 2024</span>
-                  <div className="category-chips">
-                    <button onClick={() => setAiQuery("What is BNS?")}>What is BNS?</button>
-                    <button onClick={() => setAiQuery("BNS vs IPC differences")}>BNS vs IPC</button>
-                    <button onClick={() => setAiQuery("BNS Article 101")}>Article 101</button>
-                  </div>
-                </div>
-              )}
-            </div>
+            <p>Ask me anything about Indian law - IPC, BNS, and legal procedures</p>
+           
           </div>
         )}
       </div>

@@ -29,7 +29,7 @@ export default function BailPredict() {
   const [aiResponse, setAiResponse] = useState(null);
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [aiQuery, setAiQuery] = useState("");
-  const [showAiPanel, setShowAiPanel] = useState(false);
+  const [showAiPanel, setShowAiPanel] = useState(true);
   const [languageMode, setLanguageMode] = useState('english');
   const [suggestedQuestions, setSuggestedQuestions] = useState([]);
 
@@ -75,7 +75,7 @@ export default function BailPredict() {
     return text;
   };
 
-  // Function to format response with proper styling (without markdown)
+  // Function to format response with proper styling
   const formatResponseContent = (content) => {
     if (!content) return null;
     
@@ -88,12 +88,12 @@ export default function BailPredict() {
     lines.forEach((line, index) => {
       const trimmedLine = line.trim();
       
-      // Check for bullet points (lines starting with - or •)
+      // Check for bullet points
       if (trimmedLine.startsWith('-') || trimmedLine.startsWith('•')) {
         if (!inList || listType !== 'bullet') {
           if (inList) {
             formattedElements.push(
-              <ul key={`list-${index}`} className="bail-response-bullet-list">
+              <ul key={`list-${index}`} className="response-bullet-list">
                 {listItems}
               </ul>
             );
@@ -103,7 +103,7 @@ export default function BailPredict() {
           listType = 'bullet';
         }
         listItems.push(
-          <li key={`item-${index}`} className="bail-response-bullet-item">
+          <li key={`item-${index}`} className="response-bullet-item">
             {trimmedLine.substring(1).trim()}
           </li>
         );
@@ -114,11 +114,11 @@ export default function BailPredict() {
           if (inList) {
             formattedElements.push(
               listType === 'bullet' ? (
-                <ul key={`list-${index}`} className="bail-response-bullet-list">
+                <ul key={`list-${index}`} className="response-bullet-list">
                   {listItems}
                 </ul>
               ) : (
-                <ol key={`list-${index}`} className="bail-response-numbered-list">
+                <ol key={`list-${index}`} className="response-numbered-list">
                   {listItems}
                 </ol>
               )
@@ -129,7 +129,7 @@ export default function BailPredict() {
           listType = 'numbered';
         }
         listItems.push(
-          <li key={`item-${index}`} className="bail-response-numbered-item">
+          <li key={`item-${index}`} className="response-numbered-item">
             {trimmedLine.replace(/^\d+\.\s*/, '')}
           </li>
         );
@@ -139,11 +139,11 @@ export default function BailPredict() {
         if (inList) {
           formattedElements.push(
             listType === 'bullet' ? (
-              <ul key={`list-${index}`} className="bail-response-bullet-list">
+              <ul key={`list-${index}`} className="response-bullet-list">
                 {listItems}
               </ul>
             ) : (
-              <ol key={`list-${index}`} className="bail-response-numbered-list">
+              <ol key={`list-${index}`} className="response-numbered-list">
                 {listItems}
               </ol>
             )
@@ -159,11 +159,11 @@ export default function BailPredict() {
         if (inList) {
           formattedElements.push(
             listType === 'bullet' ? (
-              <ul key={`list-${index}`} className="bail-response-bullet-list">
+              <ul key={`list-${index}`} className="response-bullet-list">
                 {listItems}
               </ul>
             ) : (
-              <ol key={`list-${index}`} className="bail-response-numbered-list">
+              <ol key={`list-${index}`} className="response-numbered-list">
                 {listItems}
               </ol>
             )
@@ -185,7 +185,7 @@ export default function BailPredict() {
         formattedElements.push(
           <p 
             key={`p-${index}`} 
-            className={`bail-response-paragraph ${hasLegalTerm ? 'highlight-text' : ''}`}
+            className={`response-paragraph ${hasLegalTerm ? 'highlight-text' : ''}`}
           >
             {trimmedLine}
           </p>
@@ -197,11 +197,11 @@ export default function BailPredict() {
     if (inList && listItems.length > 0) {
       formattedElements.push(
         listType === 'bullet' ? (
-          <ul key="list-final" className="bail-response-bullet-list">
+          <ul key="list-final" className="response-bullet-list">
             {listItems}
           </ul>
         ) : (
-          <ol key="list-final" className="bail-response-numbered-list">
+          <ol key="list-final" className="response-numbered-list">
             {listItems}
           </ol>
         )
@@ -213,7 +213,7 @@ export default function BailPredict() {
 
   const getSystemPrompt = () => {
     if (languageMode === 'english') {
-      return `You are BailPredict AI, an expert in Indian bail laws and court procedures. 
+      return `You are LegalMitra AI, an expert in Indian bail laws and court procedures. 
 
 RULES:
 1. Provide accurate information about bail procedures, court cases, IPC sections, and legal rights
@@ -228,7 +228,7 @@ RESPONSE FORMAT:
 - Use bullet points for key information
 - End with practical advice or next steps`;
     } else {
-      return `You are BailPredict AI, an expert in Indian bail laws and court procedures. Hinglish mein jawab dein.
+      return `You are LegalMitra AI, an expert in Indian bail laws and court procedures. Hinglish mein jawab dein.
 
 RULES:
 1. Simple Hinglish mein samjhayein
@@ -358,7 +358,6 @@ Suggest 3 follow-up questions someone might ask. Return only as a simple comma-s
     setAiResponse(null);
     setAiQuery("");
     setSuggestedQuestions([]);
-    setShowAiPanel(false);
   };
 
   // ... (rest of your existing code - payment functions, effects, etc. remain exactly the same)
@@ -833,7 +832,7 @@ Suggest 3 follow-up questions someone might ask. Return only as a simple comma-s
         filteredCases.filter(c => c.bail_outcome?.toLowerCase() === "granted").length,
         filteredCases.filter(c => c.bail_outcome?.toLowerCase() === "rejected").length
       ],
-      backgroundColor: ["#06b6d4", "#7c3aed"],
+      backgroundColor: ["#60a5fa", "#8b5cf6"],
     }]
   };
 
@@ -847,7 +846,7 @@ Suggest 3 follow-up questions someone might ask. Return only as a simple comma-s
     datasets: [{ 
       label: "Crime Type Count", 
       data: Object.values(barCounts), 
-      backgroundColor: "#06b6d4" 
+      backgroundColor: "#60a5fa" 
     }]
   };
 
@@ -893,8 +892,8 @@ Suggest 3 follow-up questions someone might ask. Return only as a simple comma-s
               style={{
                 marginTop: '10px',
                 background: 'transparent',
-                border: '1px solid #06b6d4',
-                color: '#06b6d4',
+                border: '1px solid #60a5fa',
+                color: '#60a5fa',
                 padding: '8px 16px',
                 borderRadius: '6px',
                 cursor: 'pointer'
@@ -915,202 +914,191 @@ Suggest 3 follow-up questions someone might ask. Return only as a simple comma-s
   return (
     <div className="bail-dashboard">
       <div className="bail-container">
-        {/* Top Controls - Language Toggle and Clear Chat */}
-        <div className="bail-top-controls">
-          <div className="bail-controls-right">
-            {/* Language Toggle */}
-            <div className="bail-lang-toggle">
-              <button 
-                className={`bail-lang-opt ${languageMode === 'english' ? 'active' : ''}`}
-                onClick={() => setLanguageMode('english')}
-              >
-                EN
-              </button>
-              <button 
-                className={`bail-lang-opt ${languageMode === 'hinglish' ? 'active' : ''}`}
-                onClick={() => setLanguageMode('hinglish')}
-              >
-                हिं
-              </button>
-            </div>
-
-            {/* Clear Chat Button (only when AI response exists) */}
-            {aiResponse && (
-              <button className="bail-clear-chat" onClick={clearAiChat} title="Clear chat">
-                ✕
-              </button>
-            )}
-          </div>
-        </div>
-
-        <h1 className="bail-title" style={{marginTop:-20}}>AI Powered Bail Predictor</h1>
+        <h1 className="bail-title">AI Powered Bail Predictor</h1>
         
-        {/* AI Assistant Panel - UPDATED WITH IMPROVED STYLING */}
-        <div className="bail-ai-panel">
-          <div className="bail-ai-header" onClick={() => setShowAiPanel(!showAiPanel)}>
-            <div className="bail-ai-title">
-              <span className="bail-ai-icon">🤖</span>
-              <h3>AI Legal Assistant - Bail Expert</h3>
+        {/* AI Assistant Panel - Using same styling as your AI assistant */}
+        <div className="ai-assistant-container-bail">
+          {/* Header */}
+          <div className="ai-header-mini-bail">
+            <div className="ai-header-left-bail">
+              <h2>LegalMitra AI</h2>
+              <div>
+                <p className="ai-subtitle-bail">Ask about bail laws & procedures</p>
+              </div>
             </div>
-            <button className="bail-ai-toggle">
-              {showAiPanel ? '▼' : '▲'}
-            </button>
-          </div>
-
-          {showAiPanel && (
-            <div className="bail-ai-content">
-              {/* Quick Action Buttons */}
-              <div className="bail-quick-actions">
+            <div className="ai-header-controls-bail">
+              {/* Language Toggle */}
+              <div className="lang-toggle-mini-bail">
                 <button 
-                  className="bail-action-chip"
-                  onClick={() => setAiQuery("What is the bail process in India?")}
+                  className={`lang-opt-bail ${languageMode === 'english' ? 'active' : ''}`}
+                  onClick={() => setLanguageMode('english')}
                 >
-                  ⚖️ Bail Process
+                  EN
                 </button>
                 <button 
-                  className="bail-action-chip"
-                  onClick={() => setAiQuery("What factors affect bail decisions?")}
+                  className={`lang-opt-bail ${languageMode === 'hinglish' ? 'active' : ''}`}
+                  onClick={() => setLanguageMode('hinglish')}
                 >
-                  📊 Bail Factors
-                </button>
-                <button 
-                  className="bail-action-chip"
-                  onClick={() => setAiQuery("What are bailable and non-bailable offenses?")}
-                >
-                  🔒 Bailable vs Non-bailable
-                </button>
-                <button 
-                  className="bail-action-chip"
-                  onClick={() => setAiQuery("How to apply for anticipatory bail?")}
-                >
-                  ⚡ Anticipatory Bail
-                </button>
-                <button 
-                  className="bail-action-chip"
-                  onClick={() => setAiQuery("What is the difference between bail and bond?")}
-                >
-                  💰 Bail vs Bond
+                  हिं
                 </button>
               </div>
 
-              {/* Query Input Form */}
-              <form onSubmit={handleAiQuery} className="bail-ai-form">
-                <div className="bail-input-wrapper">
-                  <textarea
-                    value={aiQuery}
-                    onChange={(e) => setAiQuery(e.target.value)}
-                    placeholder={languageMode === 'english' 
-                      ? "Ask about bail procedures, court cases, IPC sections..." 
-                      : "Bail procedures, court cases, IPC sections ke baare mein puchhe..."}
-                    className="bail-ai-input"
-                    rows="2"
-                  />
-                  <button 
-                    type="submit" 
-                    className="bail-ai-submit"
-                    disabled={isAiLoading || !aiQuery.trim()}
-                  >
-                    {isAiLoading ? (
-                      <div className="bail-spinner-mini"></div>
-                    ) : (
-                      <>
-                        <span className="btn-icon">⚡</span>
-                        <span>Ask AI</span>
-                      </>
-                    )}
-                  </button>
-                </div>
-              </form>
-
-              {/* AI Response - UPDATED WITH IMPROVED STYLING */}
-              {isAiLoading && (
-                <div className="bail-ai-loading">
-                  <div className="bail-ai-spinner"></div>
-                  <p>AI is analyzing your question...</p>
-                </div>
-              )}
-
-              {aiResponse && !isAiLoading && (
-                <div className={`bail-ai-response ${aiResponse.type === 'error' ? 'error' : ''}`}>
-                  <div className="bail-response-header">
-                    <div className="bail-response-query">
-                      <span className="bail-query-label">You asked:</span>
-                      <p className="bail-query-text">"{aiResponse.query}"</p>
-                    </div>
-                  </div>
-                  
-                  <div className="bail-response-content">
-                    {formatResponseContent(aiResponse.content)}
-                  </div>
-
-                  {/* Suggested Follow-up Questions */}
-                  {suggestedQuestions.length > 0 && (
-                    <div className="bail-suggested-questions">
-                      <h4 className="bail-suggested-title">You might also want to know:</h4>
-                      <div className="bail-suggested-grid">
-                        {suggestedQuestions.map((q, index) => (
-                          <button
-                            key={index}
-                            className="bail-suggested-chip"
-                            onClick={() => {
-                              setAiQuery(q);
-                              handleAiQuery({ preventDefault: () => {} });
-                            }}
-                          >
-                            {q}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Action Buttons */}
-                  <div className="bail-response-actions">
-                    <button 
-                      className="bail-response-action"
-                      onClick={() => navigator.clipboard.writeText(aiResponse.content)}
-                    >
-                      📋 Copy
-                    </button>
-                    <button 
-                      className="bail-response-action"
-                      onClick={clearAiChat}
-                    >
-                      🆕 New Query
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {/* Empty State for AI */}
-              {!aiResponse && !isAiLoading && (
-                <div className="bail-ai-empty">
-                  <h4>Bail Legal Assistant</h4>
-                  <p>Ask me about bail procedures, court cases, IPC sections, or legal rights</p>
-                </div>
+              {/* Clear Button */}
+              {aiResponse && (
+                <button className="clear-chat-btn-bail" onClick={clearAiChat} title="Clear chat">
+                  ✕
+                </button>
               )}
             </div>
-          )}
+          </div>
+
+          {/* AI Panel */}
+          <div className="ai-panel-full-bail">
+            {/* Quick Action Buttons */}
+            <div className="quick-actions-bail">
+              <button 
+                className="action-chip-bail"
+                onClick={() => setAiQuery("What is the bail process in India?")}
+              >
+                ⚖️ Bail Process
+              </button>
+              <button 
+                className="action-chip-bail"
+                onClick={() => setAiQuery("What factors affect bail decisions?")}
+              >
+                📊 Bail Factors
+              </button>
+              <button 
+                className="action-chip-bail"
+                onClick={() => setAiQuery("What are bailable and non-bailable offenses?")}
+              >
+                🔒 Bailable vs Non-bailable
+              </button>
+              <button 
+                className="action-chip-bail"
+                onClick={() => setAiQuery("How to apply for anticipatory bail?")}
+              >
+                ⚡ Anticipatory Bail
+              </button>
+              <button 
+                className="action-chip-bail"
+                onClick={() => setAiQuery("What is the difference between bail and bond?")}
+              >
+                💰 Bail vs Bond
+              </button>
+            </div>
+
+            {/* Query Input Form */}
+            <form onSubmit={handleAiQuery} className="ai-query-form-main-bail">
+              <div className="input-wrapper-main-bail">
+                <textarea
+                  value={aiQuery}
+                  onChange={(e) => setAiQuery(e.target.value)}
+                  placeholder={languageMode === 'english' 
+                    ? "Ask about bail procedures,court procedures... " 
+                    : "Bail procedures,court procedures ke baare mein puchhe..."}
+                  className="ai-query-input-main-bail"
+                  rows="2"
+                />
+                <button 
+                  type="submit" 
+                  className="ai-submit-btn-main-bail"
+                  disabled={isAiLoading || !aiQuery.trim()}
+                >
+                  {isAiLoading ? (
+                    <div className="spinner-mini-bail"></div>
+                  ) : (
+                    <>
+                      <span className="btn-icon">⚡</span>
+                      <span className="btn-text">Ask AI</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+
+            {/* AI Response Section */}
+            {isAiLoading && (
+              <div className="ai-loading-main-bail">
+                <div className="ai-spinner-main-bail"></div>
+                <p>LegalMitra AI is analyzing your question...</p>
+              </div>
+            )}
+
+            {aiResponse && !isAiLoading && (
+              <div className={`ai-response-main-bail ${aiResponse.type === 'error' ? 'error' : ''}`}>
+                <div className="response-header-main-bail">
+                  <div className="response-query-bail">
+                    <span className="query-label-bail">You asked:</span>
+                    <p className="query-text-bail">{aiResponse.query}</p>
+                  </div>
+                </div>
+                
+                <div className="response-content-main-bail">
+                  {formatResponseContent(aiResponse.content)}
+                </div>
+
+                {/* Suggested Follow-up Questions */}
+                {suggestedQuestions.length > 0 && (
+                  <div className="suggested-questions-bail">
+                    <h4 className="suggested-title-bail">You might also want to know:</h4>
+                    <div className="suggested-grid-bail">
+                      {suggestedQuestions.map((q, index) => (
+                        <button
+                          key={index}
+                          className="suggested-chip-bail"
+                          onClick={() => {
+                            setAiQuery(q);
+                            handleAiQuery({ preventDefault: () => {} });
+                          }}
+                        >
+                          {q}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Action Buttons */}
+                <div className="response-actions-main-bail">
+                  <button 
+                    className="response-action-btn-bail"
+                    onClick={() => navigator.clipboard.writeText(aiResponse.content)}
+                  >
+                    📋 Copy
+                  </button>
+                  <button 
+                    className="response-action-btn-bail"
+                    onClick={clearAiChat}
+                  >
+                    🆕 New Query
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Empty State */}
+            {!aiResponse && !isAiLoading && (
+              <div className="empty-state-bail">
+                <h3>LegalMitra AI Assistant</h3>
+                <p>Ask me anything about bail, court procedures....</p>
+              
+              </div>
+            )}
+          </div>
         </div>
         
-        <input
+        {/* <input
           type="text"
           placeholder="Search by title, court, crime type, IPC section, judge, region..."
           value={search}
           onChange={e => setSearch(e.target.value)}
           className="bail-search"
-        />
+        /> */}
 
         {/* Filters */}
         <div className="bail-filters">
-          <select 
-            value={courtFilter} 
-            onChange={e => setCourtFilter(e.target.value)} 
-            className="bail-filter-select"
-          >
-            <option value="">All Courts</option>
-            {courts.map(c => <option key={c} value={c}>{c}</option>)}
-          </select>
+       
 
           <select 
             value={crimeFilter} 
@@ -1145,19 +1133,19 @@ Suggest 3 follow-up questions someone might ask. Return only as a simple comma-s
         <div className="bail-stats">
           <div className="bail-stat-card">
             <div className="bail-stat-label">Bail Probability</div>
-            <div className="bail-stat-value" style={{ color: "#06b6d4" }}>{bailProbability}%</div>
+            <div className="bail-stat-value" style={{ color: "#60a5fa" }}>{bailProbability}%</div>
           </div>
           <div className="bail-stat-card">
             <div className="bail-stat-label">Total Cases</div>
-            <div className="bail-stat-value" style={{ color: "#7c3aed" }}>{filteredCases.length}</div>
+            <div className="bail-stat-value" style={{ color: "#8b5cf6" }}>{filteredCases.length}</div>
           </div>
           <div className="bail-stat-card">
             <div className="bail-stat-label">Most Common IPC</div>
-            <div className="bail-stat-value" style={{ color: "#06b6d4" }}>{mostCommonIPC}</div>
+            <div className="bail-stat-value" style={{ color: "#60a5fa" }}>{mostCommonIPC}</div>
           </div>
           <div className="bail-stat-card">
             <div className="bail-stat-label">Most Common Crime</div>
-            <div className="bail-stat-value" style={{ color: "#7c3aed" }}>{mostCommonCrime}</div>
+            <div className="bail-stat-value" style={{ color: "#8b5cf6" }}>{mostCommonCrime}</div>
           </div>
         </div>
 
@@ -1181,7 +1169,7 @@ Suggest 3 follow-up questions someone might ask. Return only as a simple comma-s
                     <div>
                       <strong>Bail Outcome:</strong> 
                       <span style={{ 
-                        color: c.bail_outcome?.toLowerCase() === "granted" ? "#06b6d4" : "#7c3aed",
+                        color: c.bail_outcome?.toLowerCase() === "granted" ? "#60a5fa" : "#8b5cf6",
                         fontWeight: "bold",
                         marginLeft: "5px"
                       }}>
