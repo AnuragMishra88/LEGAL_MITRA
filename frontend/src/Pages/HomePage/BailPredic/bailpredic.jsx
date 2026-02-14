@@ -25,8 +25,16 @@ export default function BailPredict() {
   const [paymentChecked, setPaymentChecked] = useState(false);
   const [hasPaid, setHasPaid] = useState(false);
 
-   // NEW STATE FOR CASE PAGINATION
-  const [casesToShow, setCasesToShow] = useState(10); // Start with 10 cases
+  // AI Assistant States
+  const [aiResponse, setAiResponse] = useState(null);
+  const [isAiLoading, setIsAiLoading] = useState(false);
+  const [aiQuery, setAiQuery] = useState("");
+  const [showAiPanel, setShowAiPanel] = useState(false);
+  const [languageMode, setLanguageMode] = useState('english');
+  const [suggestedQuestions, setSuggestedQuestions] = useState([]);
+
+  // State for case pagination
+  const [casesToShow, setCasesToShow] = useState(10);
 
   // Filters
   const [courtFilter, setCourtFilter] = useState("");
@@ -38,11 +46,322 @@ export default function BailPredict() {
   const crimes = [...new Set(casesData.map(c => c.crime_type).filter(Boolean))];
   const regions = [...new Set(casesData.map(c => c.region).filter(Boolean))];
 
-   // NEW FUNCTION TO LOAD MORE CASES
-  const loadMoreCases = () => {
-    setCasesToShow(prev => prev + 1); // Load one more case
+  // Groq API Configuration
+  const GROQ_API_KEY = import.meta.env.VITE_GROQ_API_KEY;
+  const MODEL = "llama-3.1-8b-instant";
+
+  // Function to clean text by removing markdown symbols
+  const cleanText = (text) => {
+    if (!text) return text;
+    
+    // Remove ** markers (bold in markdown)
+    text = text.replace(/\*\*(.*?)\*\*/g, '$1');
+    
+    // Remove * markers (italic in markdown)
+    text = text.replace(/\*(.*?)\*/g, '$1');
+    
+    // Remove __ markers (bold in markdown)
+    text = text.replace(/__(.*?)__/g, '$1');
+    
+    // Remove _ markers (italic in markdown)
+    text = text.replace(/_(.*?)_/g, '$1');
+    
+    // Remove # markers (headings in markdown)
+    text = text.replace(/#{1,6}\s?(.*?)(?:\n|$)/g, '$1\n');
+    
+    // Remove backticks (code in markdown)
+    text = text.replace(/`(.*?)`/g, '$1');
+    
+    return text;
   };
 
+  // Function to format response with proper styling (without markdown)
+  const formatResponseContent = (content) => {
+    if (!content) return null;
+    
+    const lines = content.split('\n');
+    const formattedElements = [];
+    let listItems = [];
+    let inList = false;
+    let listType = null;
+
+    lines.forEach((line, index) => {
+      const trimmedLine = line.trim();
+      
+      // Check for bullet points (lines starting with - or •)
+      if (trimmedLine.startsWith('-') || trimmedLine.startsWith('•')) {
+        if (!inList || listType !== 'bullet') {
+          if (inList) {
+            formattedElements.push(
+              <ul key={`list-${index}`} className="bail-response-bullet-list">
+                {listItems}
+              </ul>
+            );
+            listItems = [];
+          }
+          inList = true;
+          listType = 'bullet';
+        }
+        listItems.push(
+          <li key={`item-${index}`} className="bail-response-bullet-item">
+            {trimmedLine.substring(1).trim()}
+          </li>
+        );
+      }
+      // Check for numbered lists
+      else if (trimmedLine.match(/^\d+\./)) {
+        if (!inList || listType !== 'numbered') {
+          if (inList) {
+            formattedElements.push(
+              listType === 'bullet' ? (
+                <ul key={`list-${index}`} className="bail-response-bullet-list">
+                  {listItems}
+                </ul>
+              ) : (
+                <ol key={`list-${index}`} className="bail-response-numbered-list">
+                  {listItems}
+                </ol>
+              )
+            );
+            listItems = [];
+          }
+          inList = true;
+          listType = 'numbered';
+        }
+        listItems.push(
+          <li key={`item-${index}`} className="bail-response-numbered-item">
+            {trimmedLine.replace(/^\d+\.\s*/, '')}
+          </li>
+        );
+      }
+      // Empty line
+      else if (trimmedLine === '') {
+        if (inList) {
+          formattedElements.push(
+            listType === 'bullet' ? (
+              <ul key={`list-${index}`} className="bail-response-bullet-list">
+                {listItems}
+              </ul>
+            ) : (
+              <ol key={`list-${index}`} className="bail-response-numbered-list">
+                {listItems}
+              </ol>
+            )
+          );
+          listItems = [];
+          inList = false;
+          listType = null;
+        }
+        formattedElements.push(<br key={`br-${index}`} />);
+      }
+      // Regular paragraph
+      else {
+        if (inList) {
+          formattedElements.push(
+            listType === 'bullet' ? (
+              <ul key={`list-${index}`} className="bail-response-bullet-list">
+                {listItems}
+              </ul>
+            ) : (
+              <ol key={`list-${index}`} className="bail-response-numbered-list">
+                {listItems}
+              </ol>
+            )
+          );
+          listItems = [];
+          inList = false;
+          listType = null;
+        }
+
+        // Check if line contains important legal terms
+        const hasLegalTerm = trimmedLine.includes('Section') || 
+                            trimmedLine.includes('IPC') || 
+                            trimmedLine.includes('bail') ||
+                            trimmedLine.includes('court') ||
+                            trimmedLine.includes('CrPC') ||
+                            trimmedLine.includes('Code') ||
+                            trimmedLine.includes('Act');
+
+        formattedElements.push(
+          <p 
+            key={`p-${index}`} 
+            className={`bail-response-paragraph ${hasLegalTerm ? 'highlight-text' : ''}`}
+          >
+            {trimmedLine}
+          </p>
+        );
+      }
+    });
+
+    // Add any remaining list items
+    if (inList && listItems.length > 0) {
+      formattedElements.push(
+        listType === 'bullet' ? (
+          <ul key="list-final" className="bail-response-bullet-list">
+            {listItems}
+          </ul>
+        ) : (
+          <ol key="list-final" className="bail-response-numbered-list">
+            {listItems}
+          </ol>
+        )
+      );
+    }
+
+    return formattedElements;
+  };
+
+  const getSystemPrompt = () => {
+    if (languageMode === 'english') {
+      return `You are BailPredict AI, an expert in Indian bail laws and court procedures. 
+
+RULES:
+1. Provide accurate information about bail procedures, court cases, IPC sections, and legal rights
+2. Use simple, clear English
+3. Always mention relevant IPC sections and legal references
+4. Give practical examples from case law
+5. Be concise but thorough
+6. For serious matters, advise consulting a qualified lawyer
+
+RESPONSE FORMAT:
+- Start with a brief summary
+- Use bullet points for key information
+- End with practical advice or next steps`;
+    } else {
+      return `You are BailPredict AI, an expert in Indian bail laws and court procedures. Hinglish mein jawab dein.
+
+RULES:
+1. Simple Hinglish mein samjhayein
+2. IPC sections aur legal references zaroor batayein
+3. Case law se examples dein
+4. Short but complete jawab dein
+5. Gambhir mamlon mein lawyer se contact karne ki salah dein
+
+RESPONSE FORMAT:
+- Chota summary dijiye
+- Bullet points mein important baatein
+- End mein practical advice dijiye`;
+    }
+  };
+
+  // Function to load more cases
+  const loadMoreCases = () => {
+    setCasesToShow(prev => prev + 5);
+  };
+
+  // AI function to answer legal queries
+  const handleAiQuery = async (e) => {
+    e.preventDefault();
+    if (!aiQuery.trim()) return;
+
+    setIsAiLoading(true);
+    setShowAiPanel(true);
+    setAiResponse(null);
+
+    try {
+      const prompt = languageMode === 'english'
+        ? `Answer this legal question about bail and court cases: "${aiQuery}"
+           Provide accurate information with relevant IPC sections and legal procedures.
+           Use examples from real case law when applicable.`
+        : `Bail aur court cases ke baare mein yeh sawal hai: "${aiQuery}"
+           Sahi jankari dein aur relevant IPC sections aur legal procedures batayein.
+           Real case law se examples dein.`;
+
+      const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${GROQ_API_KEY}`
+        },
+        body: JSON.stringify({
+          model: MODEL,
+          messages: [
+            {
+              role: "system",
+              content: getSystemPrompt()
+            },
+            {
+              role: "user",
+              content: prompt
+            }
+          ],
+          max_tokens: 800,
+          temperature: 0.3
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('API request failed');
+      }
+
+      const data = await response.json();
+      if (data.choices && data.choices[0]) {
+        // Clean the response content
+        const cleanedContent = cleanText(data.choices[0].message.content);
+        
+        setAiResponse({
+          query: aiQuery,
+          content: cleanedContent
+        });
+        
+        // Generate suggested questions based on response
+        generateSuggestedQuestions(aiQuery, cleanedContent);
+      }
+    } catch (error) {
+      console.error('AI Error:', error);
+      setAiResponse({
+        type: 'error',
+        content: languageMode === 'english' 
+          ? "Sorry, unable to process your query. Please try again."
+          : "माफ कीजिए, आपका सवाल process नहीं कर पा रहा है। कृपया फिर से कोशिश करें।"
+      });
+    } finally {
+      setIsAiLoading(false);
+    }
+  };
+
+  // Generate suggested questions
+  const generateSuggestedQuestions = async (query, response) => {
+    try {
+      const prompt = `Based on this legal Q&A about bail and court cases:
+      
+Question: "${query}"
+Answer: "${response.substring(0, 200)}..."
+
+Suggest 3 follow-up questions someone might ask. Return only as a simple comma-separated list.`;
+
+      const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${GROQ_API_KEY}`
+        },
+        body: JSON.stringify({
+          model: MODEL,
+          messages: [{ role: "user", content: prompt }],
+          max_tokens: 100,
+          temperature: 0.3
+        })
+      });
+
+      const data = await res.json();
+      if (data.choices && data.choices[0]) {
+        setSuggestedQuestions(data.choices[0].message.content.split(',').map(q => q.trim()));
+      }
+    } catch (error) {
+      console.error('Suggested questions error:', error);
+    }
+  };
+
+  // Clear AI chat
+  const clearAiChat = () => {
+    setAiResponse(null);
+    setAiQuery("");
+    setSuggestedQuestions([]);
+    setShowAiPanel(false);
+  };
+
+  // ... (rest of your existing code - payment functions, effects, etc. remain exactly the same)
 
   // Fallback localStorage payment check
   const checkLocalStoragePayment = () => {
@@ -175,11 +494,10 @@ export default function BailPredict() {
     filterCases();
   }, [search, courtFilter, crimeFilter, bailFilter, regionFilter]);
 
-    // UPDATE: Reset cases to show when filters change
+  // Reset cases to show when filters change
   useEffect(() => {
-    setCasesToShow(10); // Reset to 10 cases when filters change
+    setCasesToShow(10);
   }, [search, courtFilter, crimeFilter, bailFilter, regionFilter]);
-
 
   const filterCases = () => {
     let filtered = casesData.filter(c =>
@@ -205,7 +523,6 @@ export default function BailPredict() {
 
     setFilteredCases(filtered);
     
-    // const casesToShow = Math.max(filtered.length, 5);
     const cases = filtered.slice(0, casesToShow);
     setDisplayCases(cases);
 
@@ -231,7 +548,7 @@ export default function BailPredict() {
     setMostCommonCrime(Object.keys(crimeCounts).reduce((a, b) => crimeCounts[a] > crimeCounts[b] ? a : b, "N/A"));
   };
 
-   // UPDATE: Add effect to update display cases when casesToShow changes
+  // Add effect to update display cases when casesToShow changes
   useEffect(() => {
     const cases = filteredCases.slice(0, casesToShow);
     setDisplayCases(cases);
@@ -239,7 +556,7 @@ export default function BailPredict() {
 
   const handleRefreshStatus = async () => {
     setRefreshing(true);
-    setPaymentChecked(false); // Reset payment check
+    setPaymentChecked(false);
     await refreshUser();
     
     try {
@@ -349,7 +666,7 @@ export default function BailPredict() {
         
         await refreshUser();
         setHasPaid(true);
-        setPaymentChecked(false); // Force recheck
+        setPaymentChecked(false);
         
         return data;
       } else {
@@ -396,7 +713,7 @@ export default function BailPredict() {
             razorpay_order_id: response.razorpay_order_id,
             razorpay_payment_id: response.razorpay_payment_id,
             razorpay_signature: response.razorpay_signature,
-             amount: plan.price // Send amount to backend
+             amount: plan.price
           });
 
           if (verificationResponse.success) {
@@ -533,6 +850,7 @@ export default function BailPredict() {
       backgroundColor: "#06b6d4" 
     }]
   };
+
   // If user is not logged in, show login page
   if (!user) {
     return <Login setCurrentPage={() => {}} />;
@@ -543,14 +861,11 @@ export default function BailPredict() {
     return (
       <div className="bail-dashboard">
         <div className="bail-container">
-          
+          {/* Empty loading state */}
         </div>
       </div>
     );
   }
-
-
-  
 
   // If user has not paid, show subscription gate
   if (!hasPaid) {
@@ -596,11 +911,187 @@ export default function BailPredict() {
     );
   }
 
-  // If user has paid, show the full bail dashboard
+  // If user has paid, show the full bail dashboard with AI Assistant
   return (
     <div className="bail-dashboard">
       <div className="bail-container">
-        <h1 className="bail-title">Bail Cases Dashboard</h1>
+        {/* Top Controls - Language Toggle and Clear Chat */}
+        <div className="bail-top-controls">
+          <div className="bail-controls-right">
+            {/* Language Toggle */}
+            <div className="bail-lang-toggle">
+              <button 
+                className={`bail-lang-opt ${languageMode === 'english' ? 'active' : ''}`}
+                onClick={() => setLanguageMode('english')}
+              >
+                EN
+              </button>
+              <button 
+                className={`bail-lang-opt ${languageMode === 'hinglish' ? 'active' : ''}`}
+                onClick={() => setLanguageMode('hinglish')}
+              >
+                हिं
+              </button>
+            </div>
+
+            {/* Clear Chat Button (only when AI response exists) */}
+            {aiResponse && (
+              <button className="bail-clear-chat" onClick={clearAiChat} title="Clear chat">
+                ✕
+              </button>
+            )}
+          </div>
+        </div>
+
+        <h1 className="bail-title" style={{marginTop:-20}}>AI Powered Bail Predictor</h1>
+        
+        {/* AI Assistant Panel - UPDATED WITH IMPROVED STYLING */}
+        <div className="bail-ai-panel">
+          <div className="bail-ai-header" onClick={() => setShowAiPanel(!showAiPanel)}>
+            <div className="bail-ai-title">
+              <span className="bail-ai-icon">🤖</span>
+              <h3>AI Legal Assistant - Bail Expert</h3>
+            </div>
+            <button className="bail-ai-toggle">
+              {showAiPanel ? '▼' : '▲'}
+            </button>
+          </div>
+
+          {showAiPanel && (
+            <div className="bail-ai-content">
+              {/* Quick Action Buttons */}
+              <div className="bail-quick-actions">
+                <button 
+                  className="bail-action-chip"
+                  onClick={() => setAiQuery("What is the bail process in India?")}
+                >
+                  ⚖️ Bail Process
+                </button>
+                <button 
+                  className="bail-action-chip"
+                  onClick={() => setAiQuery("What factors affect bail decisions?")}
+                >
+                  📊 Bail Factors
+                </button>
+                <button 
+                  className="bail-action-chip"
+                  onClick={() => setAiQuery("What are bailable and non-bailable offenses?")}
+                >
+                  🔒 Bailable vs Non-bailable
+                </button>
+                <button 
+                  className="bail-action-chip"
+                  onClick={() => setAiQuery("How to apply for anticipatory bail?")}
+                >
+                  ⚡ Anticipatory Bail
+                </button>
+                <button 
+                  className="bail-action-chip"
+                  onClick={() => setAiQuery("What is the difference between bail and bond?")}
+                >
+                  💰 Bail vs Bond
+                </button>
+              </div>
+
+              {/* Query Input Form */}
+              <form onSubmit={handleAiQuery} className="bail-ai-form">
+                <div className="bail-input-wrapper">
+                  <textarea
+                    value={aiQuery}
+                    onChange={(e) => setAiQuery(e.target.value)}
+                    placeholder={languageMode === 'english' 
+                      ? "Ask about bail procedures, court cases, IPC sections..." 
+                      : "Bail procedures, court cases, IPC sections ke baare mein puchhe..."}
+                    className="bail-ai-input"
+                    rows="2"
+                  />
+                  <button 
+                    type="submit" 
+                    className="bail-ai-submit"
+                    disabled={isAiLoading || !aiQuery.trim()}
+                  >
+                    {isAiLoading ? (
+                      <div className="bail-spinner-mini"></div>
+                    ) : (
+                      <>
+                        <span className="btn-icon">⚡</span>
+                        <span>Ask AI</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </form>
+
+              {/* AI Response - UPDATED WITH IMPROVED STYLING */}
+              {isAiLoading && (
+                <div className="bail-ai-loading">
+                  <div className="bail-ai-spinner"></div>
+                  <p>AI is analyzing your question...</p>
+                </div>
+              )}
+
+              {aiResponse && !isAiLoading && (
+                <div className={`bail-ai-response ${aiResponse.type === 'error' ? 'error' : ''}`}>
+                  <div className="bail-response-header">
+                    <div className="bail-response-query">
+                      <span className="bail-query-label">You asked:</span>
+                      <p className="bail-query-text">"{aiResponse.query}"</p>
+                    </div>
+                  </div>
+                  
+                  <div className="bail-response-content">
+                    {formatResponseContent(aiResponse.content)}
+                  </div>
+
+                  {/* Suggested Follow-up Questions */}
+                  {suggestedQuestions.length > 0 && (
+                    <div className="bail-suggested-questions">
+                      <h4 className="bail-suggested-title">You might also want to know:</h4>
+                      <div className="bail-suggested-grid">
+                        {suggestedQuestions.map((q, index) => (
+                          <button
+                            key={index}
+                            className="bail-suggested-chip"
+                            onClick={() => {
+                              setAiQuery(q);
+                              handleAiQuery({ preventDefault: () => {} });
+                            }}
+                          >
+                            {q}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Action Buttons */}
+                  <div className="bail-response-actions">
+                    <button 
+                      className="bail-response-action"
+                      onClick={() => navigator.clipboard.writeText(aiResponse.content)}
+                    >
+                      📋 Copy
+                    </button>
+                    <button 
+                      className="bail-response-action"
+                      onClick={clearAiChat}
+                    >
+                      🆕 New Query
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Empty State for AI */}
+              {!aiResponse && !isAiLoading && (
+                <div className="bail-ai-empty">
+                  <h4>Bail Legal Assistant</h4>
+                  <p>Ask me about bail procedures, court cases, IPC sections, or legal rights</p>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
         
         <input
           type="text"
@@ -725,7 +1216,7 @@ export default function BailPredict() {
             )}
           </div>
           
-          {/* UPDATED: Show More Button */}
+          {/* Show More Button */}
           {filteredCases.length > casesToShow && (
             <div className="bail-show-more-container">
               <button 
@@ -739,7 +1230,6 @@ export default function BailPredict() {
           
           {filteredCases.length > 0 && (
             <p className="bail-cases-count">
-              
               Showing {casesToShow} of {filteredCases.length} cases
             </p>
           )}

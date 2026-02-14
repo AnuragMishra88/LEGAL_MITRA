@@ -770,7 +770,7 @@ const FindLawyer = () => {
               <label>📍 Location</label>
               <select value={selectedState} onChange={(e) => setSelectedState(e.target.value)}>
                 <option value="">All Locations</option>
-                {states.map(state => <option key={state} value={state}>{state}</option>)}
+                {states.map(state => <option key={state} value={state}>{state}</option>)} 
               </select>
             </div>
 
@@ -780,7 +780,7 @@ const FindLawyer = () => {
                 <option value="">All Specialities</option>
                 {specialities.map(spec => <option key={spec} value={spec}>{spec}</option>)}
               </select>
-            </div>
+            </div> 
 
             <div className={styles.filterGroup}>
               <label>⭐ Rating</label>
@@ -789,7 +789,7 @@ const FindLawyer = () => {
                 <option value="4">4+ Stars</option>
                 <option value="3">3+ Stars</option>
               </select>
-            </div>
+            </div> 
 
             <div className={styles.filterGroup}>
               <label>📊 Sort By</label>
@@ -801,7 +801,7 @@ const FindLawyer = () => {
                 <option value="rating-low">Rating (Low to High)</option>
               </select>
             </div>
-          </div>
+          </div> 
 
           <div className={styles.actionRow}>
             <button className={styles.resetBtn} onClick={resetFilters}>
@@ -814,10 +814,10 @@ const FindLawyer = () => {
             </div>
           </div>
         </div>
-      </div>
+      </div> 
 
       {/* PAYMENT MODAL */}
-      {showClientPayment && renderClientPaymentScreen()}
+      {/* {showClientPayment && renderClientPaymentScreen()} */}
 
       {/* REQUEST MODAL */}
       {showRequestModal && selectedLawyer && (
@@ -831,8 +831,7 @@ const FindLawyer = () => {
               >
                 ✕
               </button>
-            </div>
-            
+            </div>           
             <div className={styles.modalBody}>
               <div className={styles.formGroup}>
                 <label>Case Type</label>
@@ -913,9 +912,9 @@ const FindLawyer = () => {
                 <p>Try adjusting your search criteria</p>
               </div>
             )}
-          </div>
+          </div> 
 
-          {/* Section 2: Other Verified Lawyers */}
+         {/* Section 2: Other Verified Lawyers */}
           <div className={`${styles.lawyersSection} ${styles.otherLawyersSection}`}>
             <div className={styles.sectionHeaderWrapper}>
               <div className={styles.sectionHeaderContent}>
@@ -928,11 +927,11 @@ const FindLawyer = () => {
                   Showing {filteredOtherLawyers.length} of {otherLawyers.length} lawyers
                 </div>
               </div>
-            </div>
+            </div> 
 
             {filteredOtherLawyers.length > 0 ? (
-               <>
-                <div className={styles.darkGrid}>
+               <> 
+              <div className={styles.darkGrid}>
                   {filteredOtherLawyers.map((lawyer) => (
                     <LawyerCard key={lawyer.id} lawyer={lawyer} isTeamLawyer={false} />
                   ))}
@@ -955,12 +954,15 @@ const FindLawyer = () => {
                 <h3>No lawyers found</h3>
                 <p>Try adjusting your search criteria</p>
               </div>
-            )}
+            )
+          }
           </div>
         </>
-      )}
+)
+}   
     </div>
-  );
-};
+    );
+}
+
 
 export default FindLawyer;

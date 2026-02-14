@@ -671,4 +671,504 @@
 .premium-subscribe-btn:hover {
   background: #0056b3;
 }
+/* AI Assistant Styles for Bail Predictor */
+.bail-top-controls {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-bottom: 1rem;
+}
 
+.bail-controls-right {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.bail-lang-toggle {
+  display: flex;
+  background: rgba(15, 23, 42, 0.8);
+  padding: 0.25rem;
+  border-radius: 10px;
+  border: 2px solid rgba(100, 116, 139, 0.3);
+  gap: 0.25rem;
+}
+
+.bail-lang-opt {
+  padding: 0.5rem 0.8rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: transparent;
+  color: #94a3b8;
+}
+
+.bail-lang-opt.active {
+  background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+  color: white;
+  box-shadow: 0 4px 12px rgba(6, 182, 212, 0.3);
+}
+
+.bail-lang-opt:hover:not(.active) {
+  background: rgba(6, 182, 212, 0.1);
+  color: #06b6d4;
+}
+
+.bail-clear-chat {
+  width: 36px;
+  height: 36px;
+  border: 2px solid rgba(100, 116, 139, 0.3);
+  border-radius: 10px;
+  background: rgba(15, 23, 42, 0.8);
+  color: #94a3b8;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.bail-clear-chat:hover {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: #ef4444;
+  color: #ef4444;
+  transform: translateY(-2px);
+}
+
+/* AI Panel */
+.bail-ai-panel {
+  margin: 2rem 0;
+  background: linear-gradient(135deg, #1e293b, #334155);
+  border-radius: 20px;
+  border: 1px solid rgba(100, 116, 139, 0.3);
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+}
+
+.bail-ai-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  background: linear-gradient(135deg, #1e293b, #2d3a4f);
+  cursor: pointer;
+  border-bottom: 2px solid rgba(6, 182, 212, 0.2);
+}
+
+.bail-ai-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.bail-ai-icon {
+  font-size: 1.5rem;
+}
+
+.bail-ai-title h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #06b6d4;
+}
+
+.bail-ai-toggle {
+  background: none;
+  border: none;
+  font-size: 1rem;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 5px 10px;
+}
+
+.bail-ai-content {
+  padding: 1.5rem;
+}
+
+/* Quick Actions */
+.bail-quick-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 2px solid rgba(100, 116, 139, 0.2);
+}
+
+.bail-action-chip {
+  padding: 0.6rem 1.2rem;
+  background: rgba(15, 23, 42, 0.6);
+  border: 2px solid rgba(100, 116, 139, 0.3);
+  border-radius: 10px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #cbd5e1;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.bail-action-chip:hover {
+  border-color: #06b6d4;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 15px rgba(6, 182, 212, 0.2);
+  background: rgba(6, 182, 212, 0.1);
+  color: #f8fafc;
+}
+
+/* AI Form */
+.bail-ai-form {
+  margin-bottom: 1.5rem;
+}
+
+.bail-input-wrapper {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.bail-ai-input {
+  flex: 1;
+  padding: 1rem 1.5rem;
+  background: rgba(15, 23, 42, 0.8);
+  border: 2px solid rgba(100, 116, 139, 0.3);
+  border-radius: 12px;
+  color: #f8fafc;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  resize: none;
+  transition: all 0.3s ease;
+  font-family: inherit;
+  backdrop-filter: blur(10px);
+}
+
+.bail-ai-input:focus {
+  outline: none;
+  border-color: #06b6d4;
+  box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.1);
+  background: rgba(15, 23, 42, 0.9);
+}
+
+.bail-ai-input::placeholder {
+  color: #94a3b8;
+}
+
+.bail-ai-submit {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 1rem 2rem;
+  background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+  border: none;
+  border-radius: 12px;
+  color: white;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(6, 182, 212, 0.3);
+}
+
+.bail-ai-submit:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(6, 182, 212, 0.4);
+  background: linear-gradient(135deg, #0891b2 0%, #0e7490 100%);
+}
+
+.bail-ai-submit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.bail-spinner-mini {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* AI Loading */
+.bail-ai-loading {
+  text-align: center;
+  padding: 2rem;
+  background: rgba(15, 23, 42, 0.6);
+  border-radius: 12px;
+  margin: 1rem 0;
+}
+
+.bail-ai-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(6, 182, 212, 0.1);
+  border-top: 3px solid #06b6d4;
+  border-radius: 50%;
+  margin: 0 auto 1rem;
+  animation: spin 1s linear infinite;
+}
+
+.bail-ai-loading p {
+  color: #94a3b8;
+  margin: 0;
+}
+
+/* AI Response */
+.bail-ai-response {
+  background: rgba(15, 23, 42, 0.6);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin: 1rem 0;
+  border-left: 4px solid #06b6d4;
+  border: 2px solid rgba(6, 182, 212, 0.2);
+  animation: fadeInUp 0.5s ease-out;
+}
+
+.bail-ai-response.error {
+  border-left-color: #ef4444;
+  border-color: rgba(239, 68, 68, 0.2);
+  background: rgba(239, 68, 68, 0.1);
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.bail-response-header {
+  margin-bottom: 1rem;
+  padding-bottom: 0.8rem;
+  border-bottom: 2px solid rgba(100, 116, 139, 0.2);
+}
+
+.bail-response-query {
+  background: rgba(15, 23, 42, 0.8);
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1px solid rgba(100, 116, 139, 0.3);
+}
+
+.bail-query-label {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  display: block;
+  margin-bottom: 0.3rem;
+}
+
+.bail-query-text {
+  font-size: 1rem;
+  font-weight: 500;
+  color: #f8fafc;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.bail-response-content {
+  line-height: 1.6;
+  color: #cbd5e1;
+}
+
+.bail-response-paragraph {
+  margin-bottom: 1rem;
+  color: #cbd5e1;
+}
+
+.bail-response-paragraph.highlight {
+  background: rgba(6, 182, 212, 0.1);
+  padding: 0.8rem;
+  border-radius: 6px;
+  font-weight: 500;
+  color: #f8fafc;
+  border-left: 3px solid #06b6d4;
+}
+
+.bail-response-bullet, .bail-response-numbered {
+  margin-left: 2rem;
+  margin-bottom: 0.5rem;
+  color: #cbd5e1;
+}
+
+.bail-response-bullet {
+  list-style-type: disc;
+}
+
+.bail-response-numbered {
+  list-style-type: decimal;
+}
+
+/* Suggested Questions */
+.bail-suggested-questions {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 2px solid rgba(100, 116, 139, 0.2);
+}
+
+.bail-suggested-title {
+  font-size: 0.9rem;
+  color: #94a3b8;
+  margin-bottom: 1rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.bail-suggested-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+}
+
+.bail-suggested-chip {
+  padding: 0.6rem 1.2rem;
+  background: rgba(15, 23, 42, 0.8);
+  border: 2px solid rgba(100, 116, 139, 0.3);
+  border-radius: 10px;
+  font-size: 0.85rem;
+  color: #cbd5e1;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.bail-suggested-chip:hover {
+  border-color: #06b6d4;
+  background: rgba(6, 182, 212, 0.1);
+  color: #f8fafc;
+  transform: translateY(-2px);
+}
+
+/* Response Actions */
+.bail-response-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 2px solid rgba(100, 116, 139, 0.2);
+}
+
+.bail-response-action {
+  padding: 0.8rem 1.5rem;
+  background: rgba(15, 23, 42, 0.8);
+  border: 2px solid rgba(100, 116, 139, 0.3);
+  border-radius: 10px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #cbd5e1;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.bail-response-action:hover {
+  border-color: #06b6d4;
+  background: rgba(6, 182, 212, 0.1);
+  color: #f8fafc;
+  transform: translateY(-2px);
+}
+
+/* AI Empty State */
+.bail-ai-empty {
+  text-align: center;
+  padding: 2rem;
+  background: rgba(15, 23, 42, 0.6);
+  border-radius: 12px;
+}
+
+.bail-empty-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+.bail-ai-empty h4 {
+  font-size: 1.2rem;
+  color: #f8fafc;
+  margin-bottom: 0.5rem;
+}
+
+.bail-ai-empty p {
+  color: #94a3b8;
+  margin: 0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .bail-input-wrapper {
+    flex-direction: column;
+  }
+
+  .bail-ai-submit {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .bail-quick-actions {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: 0.5rem;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .bail-action-chip {
+    white-space: nowrap;
+  }
+
+  .bail-suggested-grid {
+    flex-direction: column;
+  }
+
+  .bail-suggested-chip {
+    width: 100%;
+    text-align: center;
+  }
+
+  .bail-response-actions {
+    flex-direction: column;
+  }
+
+  .bail-response-action {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .bail-ai-content {
+    padding: 1rem;
+  }
+
+  .bail-ai-input {
+    padding: 0.8rem 1rem;
+  }
+
+  .bail-ai-submit {
+    padding: 0.8rem 1rem;
+  }
+}

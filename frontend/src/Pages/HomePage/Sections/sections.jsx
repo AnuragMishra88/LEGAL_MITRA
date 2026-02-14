@@ -1,289 +1,538 @@
 import { useState } from "react";
-import sectionsData from "../../../assets/data/sections.json"; 
 import "./sections.css";
 
 export default function IPCInfo() {
-  const [search, setSearch] = useState("");
-  const [result, setResult] = useState(null);
-  const [notFound, setNotFound] = useState(false);
-  const [isSearching, setIsSearching] = useState(false);
+  // AI States
+  const [aiResponse, setAiResponse] = useState(null);
+  const [isAiLoading, setIsAiLoading] = useState(false);
+  const [aiQuery, setAiQuery] = useState("");
+  const [languageMode, setLanguageMode] = useState('english');
+  const [activeLaw, setActiveLaw] = useState('ipc');
+  const [suggestedQuestions, setSuggestedQuestions] = useState([]);
 
-  const normalizeKey = (s) => {
-    if (!s) return "";
-    s = s.trim().toUpperCase();
-    if (/^\d+$/.test(s)) return "IPC_" + s;
-    s = s.replace(/\s+/g, "_");
-    if (!s.startsWith("IPC_")) s = "IPC_" + s.replace("IPC_", "");
-    return s;
-  };
+  // Groq API Configuration
+  const GROQ_API_KEY = import.meta.env.VITE_GROQ_API_KEY;
+  const MODEL = "llama-3.1-8b-instant";
 
-  const handleSearch = () => {
-    if (!search) {
-      alert("Please enter a section number (e.g., 140)");
-      return;
-    }
+  // Function to clean text by removing markdown symbols
+  const cleanText = (text) => {
+    if (!text) return text;
     
-    setIsSearching(true);
-    setTimeout(() => {
-      const parts = search.split(",").map((p) => p.trim()).filter(Boolean);
-      let found = null;
-      for (const p of parts) {
-        const key = normalizeKey(p);
-        const item = sectionsData.find(
-          (sec) => (sec.Section || "").toUpperCase() === key
-        );
-        if (item) {
-          found = item;
-          break;
+    // Remove ** markers (bold in markdown)
+    text = text.replace(/\*\*(.*?)\*\*/g, '$1');
+    
+    // Remove * markers (italic in markdown)
+    text = text.replace(/\*(.*?)\*/g, '$1');
+    
+    // Remove __ markers (bold in markdown)
+    text = text.replace(/__(.*?)__/g, '$1');
+    
+    // Remove _ markers (italic in markdown)
+    text = text.replace(/_(.*?)_/g, '$1');
+    
+    // Remove # markers (headings in markdown)
+    text = text.replace(/#{1,6}\s?(.*?)(?:\n|$)/g, '$1\n');
+    
+    // Remove backticks (code in markdown)
+    text = text.replace(/`(.*?)`/g, '$1');
+    
+    return text;
+  };
+
+  const getSystemPrompt = () => {
+    const lawName = activeLaw === 'ipc' ? 'Indian Penal Code (IPC)' : 'Bharatiya Nyaya Sanhita (BNS)';
+    
+    if (languageMode === 'english') {
+      return `You are LegalMitra AI, an expert in Indian law specializing in ${lawName}.
+
+RULES:
+1. Provide accurate information about Indian laws, sections, articles, and legal procedures
+2. Use simple, clear English
+3. Always mention relevant section/article numbers
+4. Give practical examples
+5. Be concise but thorough
+6. Note that BNS is the new criminal code replacing IPC (2024)
+7. For serious matters, advise consulting a lawyer
+
+RESPONSE FORMAT:
+- Start with brief summary
+- Use bullet points for key information
+- End with practical advice`;
+    } else {
+      return `You are LegalMitra AI, an expert in Indian law specializing in ${lawName}. Hinglish mein jawab dein.
+
+RULES:
+1. Simple Hinglish mein samjhayein
+2. Section/articles numbers zaroor batayein
+3. Examples bhi dein
+4. Short but complete jawab dein
+5. BNS naya criminal code hai jo IPC ki jagah 2024 mein aaya hai
+6. Gambhir mamlon mein lawyer se contact karne ki salah dein
+
+RESPONSE FORMAT:
+- Chota summary dijiye
+- Bullet points mein important baatein
+- End mein practical advice dijiye`;
+    }
+  };
+
+  const handleAiQuery = async (e) => {
+    e.preventDefault();
+    if (!aiQuery.trim()) return;
+
+    setIsAiLoading(true);
+    setAiResponse(null);
+
+    try {
+      const lawName = activeLaw === 'ipc' ? 'Indian Penal Code (IPC)' : 'Bharatiya Nyaya Sanhita (BNS)';
+      
+      const prompt = languageMode === 'english'
+        ? `Answer this legal question about ${lawName}: "${aiQuery}"
+           Provide accurate information with relevant ${activeLaw === 'ipc' ? 'section' : 'article'} numbers.
+           ${activeLaw === 'bns' ? 'Mention corresponding IPC sections for reference.' : ''}`
+        : `${lawName} ke baare mein yeh sawal hai: "${aiQuery}"
+           Sahi jankari dein aur relevant ${activeLaw === 'ipc' ? 'section' : 'article'} numbers batayein.
+           ${activeLaw === 'bns' ? 'IPC sections se compare bhi karein.' : ''}`;
+
+      const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${GROQ_API_KEY}`
+        },
+        body: JSON.stringify({
+          model: MODEL,
+          messages: [
+            {
+              role: "system",
+              content: getSystemPrompt()
+            },
+            {
+              role: "user",
+              content: prompt
+            }
+          ],
+          max_tokens: 800,
+          temperature: 0.3
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('API request failed');
+      }
+
+      const data = await response.json();
+      if (data.choices && data.choices[0]) {
+        // Clean the response content
+        const cleanedContent = cleanText(data.choices[0].message.content);
+        
+        setAiResponse({
+          query: aiQuery,
+          content: cleanedContent
+        });
+        
+        // Generate suggested questions based on response
+        generateSuggestedQuestions(aiQuery, cleanedContent);
+      }
+    } catch (error) {
+      console.error('AI Error:', error);
+      setAiResponse({
+        type: 'error',
+        content: languageMode === 'english' 
+          ? "Sorry, unable to process your query. Please try again."
+          : "माफ कीजिए, आपका सवाल process नहीं कर पा रहा है। कृपया फिर से कोशिश करें।"
+      });
+    } finally {
+      setIsAiLoading(false);
+    }
+  };
+
+  const generateSuggestedQuestions = async (query, response) => {
+    try {
+      const prompt = `Based on this legal Q&A about ${activeLaw === 'ipc' ? 'IPC' : 'BNS'}:
+      
+Question: "${query}"
+Answer: "${response.substring(0, 200)}..."
+
+Suggest 3 follow-up questions someone might ask. Return only as a simple comma-separated list.`;
+
+      const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${GROQ_API_KEY}`
+        },
+        body: JSON.stringify({
+          model: MODEL,
+          messages: [{ role: "user", content: prompt }],
+          max_tokens: 100,
+          temperature: 0.3
+        })
+      });
+
+      const data = await res.json();
+      if (data.choices && data.choices[0]) {
+        setSuggestedQuestions(data.choices[0].message.content.split(',').map(q => q.trim()));
+      }
+    } catch (error) {
+      console.error('Suggested questions error:', error);
+    }
+  };
+
+  const clearChat = () => {
+    setAiResponse(null);
+    setAiQuery("");
+    setSuggestedQuestions([]);
+  };
+
+  // Function to format response with proper styling (without markdown)
+  const formatResponseContent = (content) => {
+    if (!content) return null;
+    
+    const lines = content.split('\n');
+    const formattedElements = [];
+    let listItems = [];
+    let inList = false;
+    let listType = null;
+
+    lines.forEach((line, index) => {
+      const trimmedLine = line.trim();
+      
+      // Check for bullet points (lines starting with - or •)
+      if (trimmedLine.startsWith('-') || trimmedLine.startsWith('•')) {
+        if (!inList || listType !== 'bullet') {
+          if (inList) {
+            formattedElements.push(
+              <ul key={`list-${index}`} className="response-bullet-list">
+                {listItems}
+              </ul>
+            );
+            listItems = [];
+          }
+          inList = true;
+          listType = 'bullet';
         }
+        listItems.push(
+          <li key={`item-${index}`} className="response-bullet-item">
+            {trimmedLine.substring(1).trim()}
+          </li>
+        );
       }
-
-      if (found) {
-        setResult(found);
-        setNotFound(false);
-      } else {
-        setResult(null);
-        setNotFound(true);
+      // Check for numbered lists
+      else if (trimmedLine.match(/^\d+\./)) {
+        if (!inList || listType !== 'numbered') {
+          if (inList) {
+            formattedElements.push(
+              listType === 'bullet' ? (
+                <ul key={`list-${index}`} className="response-bullet-list">
+                  {listItems}
+                </ul>
+              ) : (
+                <ol key={`list-${index}`} className="response-numbered-list">
+                  {listItems}
+                </ol>
+              )
+            );
+            listItems = [];
+          }
+          inList = true;
+          listType = 'numbered';
+        }
+        listItems.push(
+          <li key={`item-${index}`} className="response-numbered-item">
+            {trimmedLine.replace(/^\d+\.\s*/, '')}
+          </li>
+        );
       }
-      setIsSearching(false);
-    }, 500);
-  };
+      // Empty line
+      else if (trimmedLine === '') {
+        if (inList) {
+          formattedElements.push(
+            listType === 'bullet' ? (
+              <ul key={`list-${index}`} className="response-bullet-list">
+                {listItems}
+              </ul>
+            ) : (
+              <ol key={`list-${index}`} className="response-numbered-list">
+                {listItems}
+              </ol>
+            )
+          );
+          listItems = [];
+          inList = false;
+          listType = null;
+        }
+        formattedElements.push(<br key={`br-${index}`} />);
+      }
+      // Regular paragraph
+      else {
+        if (inList) {
+          formattedElements.push(
+            listType === 'bullet' ? (
+              <ul key={`list-${index}`} className="response-bullet-list">
+                {listItems}
+              </ul>
+            ) : (
+              <ol key={`list-${index}`} className="response-numbered-list">
+                {listItems}
+              </ol>
+            )
+          );
+          listItems = [];
+          inList = false;
+          listType = null;
+        }
 
-  const handleKeyDown = (e) => {
-    if (e.key === "Enter") handleSearch();
-  };
+        // Check if line contains important legal terms
+        const hasLegalTerm = trimmedLine.includes('Section') || 
+                            trimmedLine.includes('Article') || 
+                            trimmedLine.includes('IPC') || 
+                            trimmedLine.includes('BNS') ||
+                            trimmedLine.includes('Act') ||
+                            trimmedLine.includes('Code');
 
-  const clearSearch = () => {
-    setSearch("");
-    setResult(null);
-    setNotFound(false);
+        formattedElements.push(
+          <p 
+            key={`p-${index}`} 
+            className={`response-paragraph ${hasLegalTerm ? 'highlight-text' : ''}`}
+          >
+            {trimmedLine}
+          </p>
+        );
+      }
+    });
+
+    // Add any remaining list items
+    if (inList && listItems.length > 0) {
+      formattedElements.push(
+        listType === 'bullet' ? (
+          <ul key="list-final" className="response-bullet-list">
+            {listItems}
+          </ul>
+        ) : (
+          <ol key="list-final" className="response-numbered-list">
+            {listItems}
+          </ol>
+        )
+      );
+    }
+
+    return formattedElements;
   };
 
   return (
-    <div className="sections-container">
-      {/* Hero Section */}
-      <section className="sections-hero">
-        <div className="hero-content">
-          <div className="logo-container">
-            <div className="logo">⚖️</div>
-          </div>
-          <h1 className="hero-title">
-            IPC Sections <span className="highlight">Database</span>
-          </h1>
-          <p className="hero-subtitle">
-            Comprehensive Indian Penal Code database with detailed descriptions, 
-            offenses, and punishments for every section
-          </p>
-          <div className="search-stats">
-            <div className="stat">
-              <span className="stat-number">{sectionsData.length}+</span>
-              <span className="stat-label">Sections</span>
-            </div>
-            <div className="stat">
-              <span className="stat-number">100%</span>
-              <span className="stat-label">Verified</span>
-            </div>
-            <div className="stat">
-              <span className="stat-number">24/7</span>
-              <span className="stat-label">Access</span>
-            </div>
+    <div className="ai-assistant-container">
+      {/* Header */}
+      <div className="ai-header-mini">
+        <div className="ai-header-left">
+          <div>
+            <p className="ai-subtitle">Ask anything about {activeLaw === 'ipc' ? 'IPC' : 'BNS'}</p>
           </div>
         </div>
-      </section>
+        <div className="ai-header-controls">
+          {/* Law Toggle */}
+          <div className="law-toggle-mini">
+            <button 
+              className={`law-option ${activeLaw === 'ipc' ? 'active' : ''}`}
+              onClick={() => setActiveLaw('ipc')}
+            >
+              IPC
+            </button>
+            <button 
+              className={`law-option ${activeLaw === 'bns' ? 'active' : ''}`}
+              onClick={() => setActiveLaw('bns')}
+            >
+              BNS
+            </button>
+          </div>
 
-      {/* Search Section */}
-      <section className="search-section">
-        <div className="container">
-          <div className="search-card">
-            <div className="search-header">
-              <h2>Search IPC Sections</h2>
-              <p>Enter section number to get detailed legal information</p>
+          {/* Language Toggle */}
+          <div className="lang-toggle-mini">
+            <button 
+              className={`lang-opt ${languageMode === 'english' ? 'active' : ''}`}
+              onClick={() => setLanguageMode('english')}
+            >
+              EN
+            </button>
+            <button 
+              className={`lang-opt ${languageMode === 'hinglish' ? 'active' : ''}`}
+              onClick={() => setLanguageMode('hinglish')}
+            >
+              हिं
+            </button>
+          </div>
+
+          {/* Clear Button */}
+          {aiResponse && (
+            <button className="clear-chat-btn" onClick={clearChat} title="Clear chat">
+              ✕
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* AI Assistant Panel */}
+      <div className="ai-panel-full">
+        {/* Quick Action Buttons */}
+        <div className="quick-actions">
+          <button 
+            className="action-chip"
+            onClick={() => setAiQuery(activeLaw === 'ipc' ? "What is Section 302?" : "What is Article 101?")}
+          >
+            📜 {activeLaw === 'ipc' ? 'Section 302' : 'Article 101'}
+          </button>
+          <button 
+            className="action-chip"
+            onClick={() => setAiQuery("How to file an FIR?")}
+          >
+            📝 File FIR
+          </button>
+          <button 
+            className="action-chip"
+            onClick={() => setAiQuery("What is bail and how to get it?")}
+          >
+            ⚖️ Bail process
+          </button>
+          <button 
+            className="action-chip"
+            onClick={() => setAiQuery("What are my rights if arrested?")}
+          >
+            🔒 Rights on arrest
+          </button>
+          <button 
+            className="action-chip"
+            onClick={() => setAiQuery("Difference between theft and robbery")}
+          >
+            🔍 Theft vs Robbery
+          </button>
+          {activeLaw === 'bns' && (
+            <button 
+              className="action-chip highlight"
+              onClick={() => setAiQuery("Compare BNS with IPC")}
+            >
+              🔄 IPC vs BNS
+            </button>
+          )}
+        </div>
+
+        {/* Query Input Form */}
+        <form onSubmit={handleAiQuery} className="ai-query-form-main">
+          <div className="input-wrapper-main">
+            <textarea
+              value={aiQuery}
+              onChange={(e) => setAiQuery(e.target.value)}
+              placeholder={languageMode === 'english' 
+                ? "Ask any legal question... (e.g., What is Section 302? How to get bail?)" 
+                : "कोई भी कानूनी सवाल पूछें... (जैसे, Section 302 क्या है? बेल कैसे मिलती है?)"}
+              className="ai-query-input-main"
+              rows="2"
+            />
+            <button 
+              type="submit" 
+              className="ai-submit-btn-main"
+              disabled={isAiLoading || !aiQuery.trim()}
+            >
+              {isAiLoading ? (
+                <div className="spinner-mini"></div>
+              ) : (
+                <>
+                  <span className="btn-icon">⚡</span>
+                  <span className="btn-text">Ask AI</span>
+                </>
+              )}
+            </button>
+          </div>
+        </form>
+
+        {/* AI Response Section */}
+        {isAiLoading && (
+          <div className="ai-loading-main">
+            <div className="ai-spinner-main"></div>
+            <p>LegalMitra AI is analyzing your question...</p>
+          </div>
+        )}
+
+        {aiResponse && !isAiLoading && (
+          <div className={`ai-response-main ${aiResponse.type === 'error' ? 'error' : ''}`}>
+            <div className="response-header-main">
+              <div className="response-query">
+                <span className="query-label">You asked:</span>
+                <p className="query-text">{aiResponse.query || aiQuery}</p>
+              </div>
             </div>
             
-            <div className="search-input-group">
-              <div className="input-container " style={{background:"black",padding:"1px"
-              }}>
-                <div className="input-icon">🔍</div>
-                <input
-                  type="text"
-                  placeholder="Enter section number (e.g., 140, 302, IPC_420)"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  className="search-input"
-                />
-                {search && (
-                  <button className="clear-btn" style={{padding:"10px" , background:"none"}} onClick={clearSearch}>
-                    ✕
-                  </button>
-                )}
+            <div className="response-content-main">
+              {formatResponseContent(aiResponse.content)}
+            </div>
+
+            {/* Suggested Follow-up Questions */}
+            {suggestedQuestions.length > 0 && (
+              <div className="suggested-questions">
+                <h4 className="suggested-title">You might also want to know:</h4>
+                <div className="suggested-grid">
+                  {suggestedQuestions.map((q, index) => (
+                    <button
+                      key={index}
+                      className="suggested-chip"
+                      onClick={() => {
+                        setAiQuery(q);
+                        handleAiQuery({ preventDefault: () => {} });
+                      }}
+                    >
+                      {q}
+                    </button>
+                  ))}
+                </div>
               </div>
+            )}
+
+            {/* Action Buttons */}
+            <div className="response-actions-main">
               <button 
-                onClick={handleSearch} 
-                className="search-btn"
-                disabled={isSearching}
+                className="response-action-btn"
+                onClick={() => navigator.clipboard.writeText(aiResponse.content)}
               >
-                {isSearching ? (
-                  <>
-                    <div className="spinner"></div>
-                    Searching...
-                  </>
-                ) : (
-                  <>
-                    <span className="btn-icon">⚡</span>
-                    Search Section
-                  </>
-                )}
+                📋 Copy
+              </button>
+              <button 
+                className="response-action-btn"
+                onClick={clearChat}
+              >
+                🆕 New Query
               </button>
             </div>
+          </div>
+        )}
 
-            <div className="search-tips">
-              <div className="tip">
-                <span className="tip-icon">💡</span>
-                <span>Try: <code>140</code>, <code>IPC_302</code>, or multiple sections like <code>140, 302, 420</code></span>
+        {/* Empty State */}
+        {!aiResponse && !isAiLoading && (
+          <div className="empty-state">
+            <h3>LegalMitra AI Assistant</h3>
+            <p>Ask me anything about Indian Penal Code or Bharatiya Nyaya Sanhita</p>
+            <div className="example-questions-grid">
+              <div className="example-category">
+                <span className="category-title">📜 IPC Sections</span>
+                <div className="category-chips">
+                  <button onClick={() => setAiQuery("What is Section 302?")}>Section 302</button>
+                  <button onClick={() => setAiQuery("Explain Section 420")}>Section 420</button>
+                  <button onClick={() => setAiQuery("Section 376 details")}>Section 376</button>
+                </div>
               </div>
+             
+              {activeLaw === 'bns' && (
+                <div className="example-category">
+                  <span className="category-title">🆕 BNS 2024</span>
+                  <div className="category-chips">
+                    <button onClick={() => setAiQuery("What is BNS?")}>What is BNS?</button>
+                    <button onClick={() => setAiQuery("BNS vs IPC differences")}>BNS vs IPC</button>
+                    <button onClick={() => setAiQuery("BNS Article 101")}>Article 101</button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
-        </div>
-      </section>
-
-      {/* Results Section */}
-      {(result || notFound) && (
-        <section className="results-section">
-          <div className="container">
-            {result && (
-              <div className="result-card success">
-                <div className="result-header">
-                  <div className="result-badge">
-                    <span className="badge-icon">✅</span>
-                    Section Found
-                  </div>
-                  <div className="section-number">{result.Section}</div>
-                </div>
-                
-                <div className="result-content">
-                  <div className="info-grid">
-                    <div className="info-item full-width">
-                      <div className="info-label">
-                        <span className="label-icon">⚖️</span>
-                        Offense
-                      </div>
-                      <div className="info-value">{result.Offense}</div>
-                    </div>
-                    
-                    <div className="info-item full-width">
-                      <div className="info-label">
-                        <span className="label-icon">⚡</span>
-                        Punishment
-                      </div>
-                      <div className="info-value">{result.Punishment}</div>
-                    </div>
-                    
-                    <div className="info-item full-width">
-                      <div className="info-label">
-                        <span className="label-icon">📖</span>
-                        Description
-                      </div>
-                      <div className="info-value description">
-                        {result.Description}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="result-footer">
-                  <button className="action-btn primary" onClick={clearSearch}>
-                    Search Another Section
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {notFound && (
-              <div className="result-card error">
-                <div className="result-header">
-                  <div className="result-badge error">
-                    <span className="badge-icon">❌</span>
-                    Section Not Found
-                  </div>
-                </div>
-                
-                <div className="result-content">
-                  <div className="error-message">
-                    <div className="error-icon">🔍</div>
-                    <div>
-                      <h3>No matching section found</h3>
-                      <p>
-                        We couldn't find any data for "<strong>{search}</strong>". 
-                        Please check the format and try again.
-                      </p>
-                    </div>
-                  </div>
-                  
-                  <div className="suggestions">
-                    <h4>Try these formats:</h4>
-                    <div className="suggestion-list">
-                      <div className="suggestion">
-                        <code>140</code>
-                        <span>Simple number</span>
-                      </div>
-                      <div className="suggestion">
-                        <code>IPC_302</code>
-                        <span>With IPC prefix</span>
-                      </div>
-                      <div className="suggestion">
-                        <code>140, 302</code>
-                        <span>Multiple sections</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="result-footer">
-                  <button className="action-btn primary" onClick={clearSearch}>
-                    Try Again
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-        </section>
-      )}
-
-      {/* Features Section - UPDATED STRUCTURE */}
-      <section className="features-section">
-        <div className="container">
-          <div className="section-header">
-            <h2>Why Use Our IPC Database?</h2>
-          </div>
-          
-          <div className="features-grid">
-            <div className="feature-card">
-              <div className="feature-top-row">
-                <div className="feature-icon">📚</div>
-                <h3>Complete Database</h3>
-              </div>
-              <p>Access all IPC sections with detailed descriptions and legal interpretations</p>
-            </div>
-            
-            <div className="feature-card">
-              <div className="feature-top-row">
-                <div className="feature-icon">⚡</div>
-                <h3>Instant Search</h3>
-              </div>
-              <p>Find any section instantly with our optimized search algorithm</p>
-            </div>
-            
-            <div className="feature-card">
-              <div className="feature-top-row">
-                <div className="feature-icon">🔍</div>
-                <h3>Multiple Formats</h3>
-              </div>
-              <p>Search using simple numbers, IPC prefixes, or multiple sections</p>
-            </div>
-          </div>
-        </div>
-      </section>
+        )}
+      </div>
     </div>
   );
 }
