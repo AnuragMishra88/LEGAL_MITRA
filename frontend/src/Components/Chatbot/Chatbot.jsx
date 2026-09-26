@@ -16,7 +16,7 @@ const Chatbot = () => {
   // Groq API Key
   const GROQ_API_KEY=import.meta.env.VITE_GROQ_API_KEY;
 
-  const MODEL = "llama-3.1-8b-instant";
+  const MODEL = "openai/gpt-oss-20b";
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
